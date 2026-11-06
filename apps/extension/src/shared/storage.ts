@@ -37,3 +37,17 @@ export async function setStoredConfig(config: Partial<ExtensionConfig>): Promise
     });
   });
 }
+
+export async function clearStoredConfig(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof chrome === "undefined" || !chrome.storage?.local) {
+      resolve();
+      return;
+    }
+    chrome.storage.local.remove(["token", "paired"], () => {
+      resolve();
+    });
+  });
+}
+
+

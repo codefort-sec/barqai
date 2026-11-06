@@ -15,11 +15,11 @@
 
 | Component | Target URL / Asset | Description |
 | :--- | :--- | :--- |
-| **Web Dashboard** | [`https://codefort-web.vercel.app`](https://codefort-web.vercel.app) | Cyber Brutalist Next.js 14 UI with side-by-side patch diffing & 1-click apply |
+| **Web Dashboard** | [`https://codefort-web.vercel.app`](https://codefort-web.vercel.app) | Cyber Brutalist Next.js 14 UI with side-by-side patch diffing, real-time telemetry, & 1-click apply |
 | **Backend API** | [`https://codefort-lilac.vercel.app`](https://codefort-lilac.vercel.app) | FastAPI core, multi-engine detection, OSV client & Barq-AI explainability |
 | **API Documentation** | [`https://codefort-lilac.vercel.app/docs`](https://codefort-lilac.vercel.app/docs) | Interactive OpenAPI 3.0 Swagger UI with full schemas and remediation endpoints |
-| **Chrome Extension** | [`apps/extension`](apps/extension) | Manifest V3 guard extension with inline GitHub diff `⚡ Fix with BARQAI` drawers |
-| **Firefox Extension** | [`apps/extension`](apps/extension) | WebExtension with Gecko ID for Mozilla Firefox |
+| **Chrome Extension (v0.2.0)** | [`apps/extension`](apps/extension) | Manifest V3 guard extension with PR badge, inline diff warnings, and BARQAI Side Panel |
+| **Firefox Extension (v0.2.0)** | [`apps/extension`](apps/extension) | WebExtension with Gecko ID for Mozilla Firefox |
 | **GitHub Repository** | [`codefort-sec/barqai`](https://github.com/codefort-sec/barqai) | Main monorepo containing AI engine, scanners, and evaluation benchmark |
 | **GitHub Organization** | [`https://github.com/codefort-sec`](https://github.com/codefort-sec) | Organization holding platform monorepo and live demo attack repositories |
 
@@ -90,12 +90,15 @@ Average Evaluation Latency:    0.16s (Deterministic Fail-Safe / Sub-second Infer
 - **What to tell judges:** *"We curated a specialized fine-tuning dataset formatted in ShareGPT/SFT standard specifically for supply-chain PR defense."*
 - **The Technical Flex:** The dataset teaches models how to recognize modern software supply chain tradecraft, including reverse shell droppers in npm preinstall, dependency typosquatting, and GitHub runner credential exfiltration. Includes a 4-bit LoRA training script (`train_lora.py`) using PEFT/BitsAndBytes for on-premise GPU fine-tuning.
 
-### 10. Autonomous Chrome Extension with In-DOM GitHub Diff Remediations
-- **What to tell judges:** *"Barq-AI isn't an isolated script; it is seamlessly integrated into the actual developer workflow. The moment a developer visits a pull request on GitHub, the extension autonomously awakens."*
+### 10. Autonomous CODEFORT Guard Browser Integration (Phase 5)
+- **What to tell judges:** *"Barq-AI is seamlessly embedded right into GitHub where developers live. No new tabs, no context switching."*
 - **The Technical Flex:**
-  - **Autonomous Awakening (`serviceWorker.ts`):** Actively listens to GitHub tab lifecycle events (`chrome.tabs.onUpdated`, `chrome.tabs.onActivated`, and `webNavigation.onHistoryStateUpdated`), instantly pre-fetching security status and setting the toolbar icon badge (`BLK`, `REV`, `OK`, `SCAN`).
-  - **Inline Diff Fix Drawers (`content.js`):** Intercepts GitHub PR diff tables and injects interactive **"⚡ Fix with BARQAI"** drawers. Developers can inspect side-by-side original vs. corrected code and click **"Apply Fix to PR Branch ↗"** without leaving the GitHub review page.
-  - **Pure IIFE Bundle:** Compiled with Vite into a standalone Immediately Invoked Function Expression (`dist/content.js`) with zero ES module imports, conforming strictly to Chrome Manifest V3 runtime requirements.
+  - **PR Security Badge (`pr-header-injector.tsx`):** Injects a Cyber Brutalist `PASS` (Green), `REVIEW` (Yellow), or `BLOCK` (Red) badge with calculated risk score directly next to the GitHub PR title, complete with an interactive overview popover.
+  - **Inline Diff Warnings (`diff-injector.tsx`):** Detects lines with identified security risks in GitHub's "Files changed" view, injecting high-contrast warning rows and an interactive **"⚡ Fix with BARQAI"** drawer displaying side-by-side original vs. corrected code.
+  - **BARQAI Side Panel (`SidePanel.tsx`):** Leverages the modern Chrome 114+ Side Panel API to provide an in-depth security cockpit displaying risk scores, vulnerability details, grounded evidence citations (`[EVIDENCE: ...]`), explanations, and 1-click remediation actions.
+  - **Autonomous SPA Observer (`github-observer.ts`):** Monitors GitHub Turbo/SPA navigations (`turbo:load`, `turbo:render`, `popstate`), ensuring badges and diff warnings persist accurately across client-side page transitions without duplicate elements.
+  - **Pure Manifest V3 Architecture:** Built with Vite into a standalone IIFE bundle (`dist/content.js`) and module service worker (`dist/background.js`) with zero remote script violations.
+
 
 ---
 
@@ -450,16 +453,19 @@ python -m app.ai.eval_suite --compare
 ```bash
 cd services/api
 python -m pytest -v services/api/tests/
-# Result: 78 passed in ~60s across all 6 test suites (100% pass rate)
+# Result: 82 passed in ~80s across all test suites (100% pass rate)
 ```
 
-### 3. Build the Chrome Extension (Manifest V3)
+### 3. Build and Package the Chrome Extension (Manifest V3)
 ```bash
 cd apps/extension
 npm install
 npm run build
-# Compiles into dist/content.js (pure IIFE, 0 import statements) and dist/background.js
+# Compiles into dist/content.js (pure IIFE, 0 import statements), dist/background.js, dist/popup.html, dist/sidepanel.html
+npm run package
+# Packages codefort-guard-chrome-v0.2.0.zip and Firefox XPI archives
 ```
+
 
 ### 4. Build the Web Dashboard (Next.js 14)
 ```bash

@@ -10,7 +10,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        popup: resolve(__dirname, "src/popup/index.html"),
+        popup: resolve(__dirname, "popup.html"),
+        sidepanel: resolve(__dirname, "sidepanel.html"),
         background: resolve(__dirname, "src/background/serviceWorker.ts"),
       },
       output: {
@@ -21,7 +22,7 @@ export default defineConfig({
           return "assets/[name]-[hash].js";
         },
         chunkFileNames: "assets/[name]-[hash].js",
-        assetFileNames: (assetInfo) => {
+        assetFileNames: () => {
           return "assets/[name]-[hash].[ext]";
         },
       },

@@ -1,17 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "CodeFort Guard",
-  "version": "0.1.3",
-  "description": "Real-time malicious PR detector, dependency risk checker, and security review copilot powered by Barq-AI.",
+  "name": "CODEFORT Guard",
+  "version": "0.2.0",
+  "description": "Real-time AI Pull Request Security Intelligence & Automated Remediation Copilot powered by BARQAI.",
   "permissions": [
     "storage",
     "activeTab",
     "tabs",
     "webNavigation",
-    "notifications"
+    "notifications",
+    "sidePanel"
   ],
   "host_permissions": [
     "https://github.com/*",
+    "https://codefort-web.vercel.app/*",
     "https://codefort-lilac.vercel.app/*",
     "http://localhost:8000/*",
     "http://127.0.0.1:8000/*"
@@ -30,9 +32,12 @@
       "run_at": "document_idle"
     }
   ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
   "action": {
-    "default_popup": "src/popup/index.html",
-    "default_title": "CodeFort Guard (Barq-AI)",
+    "default_popup": "popup.html",
+    "default_title": "CODEFORT Guard // BARQAI",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
