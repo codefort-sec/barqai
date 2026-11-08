@@ -115,6 +115,16 @@ export default function ExtensionGuidePage() {
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <a
+              href="https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#ff7139] hover:bg-[#e05d2b] text-white font-extrabold text-xs px-4 py-2.5 uppercase tracking-wider flex items-center gap-2 transition-all shadow-md shadow-[#ff7139]/20"
+            >
+              <span>🦊 Firefox Add-ons (Official Store)</span>
+              <span>↗</span>
+            </a>
+
+            <a
               href="https://github.com/codefort-sec/codefort/releases/tag/v0.1.3"
               target="_blank"
               rel="noopener noreferrer"
@@ -157,7 +167,7 @@ export default function ExtensionGuidePage() {
                 : "border-transparent text-text-muted hover:text-text hover:bg-surface"
             }`}
           >
-            Mozilla Firefox (Developer & AMO)
+            Mozilla Firefox (Official AMO Store &amp; Dev)
           </button>
         </div>
 
@@ -228,6 +238,43 @@ export default function ExtensionGuidePage() {
         {/* Tab 2: Firefox Guide */}
         {activeTab === "firefox" && (
           <div className="flex flex-col gap-6">
+            {/* Official Store Card - Recommended Method */}
+            <div className="border-2 border-[#ff7139] bg-[#ff7139]/10 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#ff7139] text-white text-[10px] font-black px-2 py-0.5 uppercase tracking-wider">
+                    OFFICIALLY APPROVED BY MOZILLA
+                  </span>
+                  <span className="text-xs text-[#ff7139] font-bold">1-CLICK INSTALL</span>
+                </div>
+                <h3 className="text-lg md:text-xl font-black text-text uppercase">
+                  Install from Firefox Add-ons (AMO)
+                </h3>
+                <p className="text-xs text-text-muted max-w-xl leading-relaxed">
+                  CodeFort Guard is officially reviewed, signed, and published on the Mozilla Add-ons repository. Install with a single click—no developer mode or temporary debugging flags required.
+                </p>
+                <div className="text-[11px] text-[#ff7139] font-mono">
+                  Listing: addons.mozilla.org/en-US/firefox/addon/codefort-guard/
+                </div>
+              </div>
+
+              <a
+                href="https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#ff7139] hover:bg-[#e05d2b] text-white font-black text-xs px-6 py-3.5 uppercase tracking-wider flex items-center gap-2 shrink-0 shadow-lg shadow-[#ff7139]/30 transition-all cursor-pointer hover:scale-[1.02]"
+              >
+                <span>🦊 Add to Firefox</span>
+                <span>↗</span>
+              </a>
+            </div>
+
+            {/* Offline / Developer Mode Section */}
+            <div className="flex items-center gap-2 text-xs font-bold text-text uppercase pt-2">
+              <span className="text-lime">//</span>
+              <span>ALTERNATIVE: MANUAL / OFFLINE INSTALLATION (.XPI &amp; .ZIP)</span>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="border border-border bg-surface p-5 flex flex-col justify-between">
                 <div>
@@ -283,14 +330,14 @@ export default function ExtensionGuidePage() {
               </div>
             </div>
 
-            {/* Firefox Store Note */}
+            {/* Firefox Verified Note */}
             <div className="border border-border bg-bg p-5 flex flex-col gap-2">
               <div className="text-xs font-bold text-text uppercase flex items-center gap-2">
-                <span className="text-lime">🦊</span>
-                <span>Mozilla Add-on Store (AMO) Notice:</span>
+                <span className="text-[#ff7139]">🦊</span>
+                <span>Mozilla AMO Verification Status:</span>
               </div>
               <p className="text-xs text-text-muted leading-relaxed">
-                CodeFort Guard uses clean, unminified source code adhering strictly to Mozilla's Add-on Policies. It has been validated against Mozilla's automated review pipeline.
+                CodeFort Guard has been verified and signed by Mozilla. The add-on enforces zero-trust PR security with zero telemetry egress to third-party ad networks, strict CSP compliance, and local GitHub DOM injection.
               </p>
             </div>
           </div>

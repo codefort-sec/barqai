@@ -168,15 +168,17 @@ export default function HomePage() {
             <div className="text-[10px] text-lime mb-2">/05 BROWSER GUARD (CHROME & FIREFOX)</div>
             <div className="text-sm font-bold text-text uppercase mb-2">Browser Copilot</div>
             <p className="text-xs text-text-muted mb-4">
-              Install the extension on Chrome, Brave, Arc, Edge, or Firefox to inspect verdicts directly on GitHub PRs.
+              Officially approved on <strong>Mozilla Add-ons (AMO)</strong>! Also runs on Chrome, Brave, Arc, &amp; Edge with inline PR badges.
             </p>
           </div>
-          <Link
-            href="/extension"
-            className="bg-lime hover:bg-lime-muted text-bg font-extrabold text-xs py-2 px-3 text-center uppercase tracking-wider"
-          >
-            INSTALL EXTENSION ↗
-          </Link>
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/extension"
+              className="bg-lime hover:bg-lime-muted text-bg font-extrabold text-xs py-2 px-3 text-center uppercase tracking-wider"
+            >
+              INSTALL EXTENSION ↗
+            </Link>
+          </div>
         </div>
 
         <div className="border border-border bg-surface p-5 flex flex-col justify-between">

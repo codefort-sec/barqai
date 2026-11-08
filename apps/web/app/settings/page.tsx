@@ -199,6 +199,15 @@ export default function SettingsPage() {
               </Link>
             </div>
             <div className="flex flex-wrap gap-3">
+              <a
+                href="https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#ff7139] hover:bg-[#e05d2b] text-white font-extrabold text-xs px-3.5 py-2 uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm shadow-[#ff7139]/20"
+              >
+                <span>🦊 Firefox Add-ons (Store)</span>
+                <span>↗</span>
+              </a>
               <Link
                 href="/extension"
                 className="bg-lime hover:bg-lime-muted text-bg font-extrabold text-xs px-3.5 py-2 uppercase tracking-wider flex items-center gap-1.5 transition-colors"

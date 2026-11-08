@@ -1,6 +1,7 @@
 # CODEFORT // ZERO-TRUST PR & SUPPLY CHAIN DEFENSE POWERED BY Barq-AI
 
 [![CodeFort CI](https://github.com/codefort-sec/barqai/actions/workflows/ci.yml/badge.svg)](https://github.com/codefort-sec/barqai/actions/workflows/ci.yml)
+[![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-Official_Store-ff7139?style=flat-square&logo=firefox-browser)](https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/)
 [![Web Dashboard](https://img.shields.io/badge/Web_Dashboard-Vercel_Live-00ff66?style=flat-square&logo=vercel)](https://codefort-web.vercel.app)
 [![Install Guide](https://img.shields.io/badge/Install_Guide-Extension_Setup-d7ff35?style=flat-square&logo=googlechrome)](https://codefort-web.vercel.app/extension)
 [![FastAPI Core](https://img.shields.io/badge/FastAPI_Engine-Vercel_Live-00e5ff?style=flat-square&logo=fastapi)](https://codefort-lilac.vercel.app/docs)
@@ -18,13 +19,14 @@
 
 | Component | Target URL / Asset | Description |
 | :--- | :--- | :--- |
+| **Firefox Add-on (Official Store)** | [**`addons.mozilla.org`**](https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/) | **Reviewed & Approved Mozilla Add-ons Listing (1-Click Install)** |
 | **Web Dashboard** | [`https://codefort-web.vercel.app`](https://codefort-web.vercel.app) | Cyber Brutalist UI for PR forensics, policy toggles, & live multi-repo audits |
 | **Barq-AI Copilot Studio** | [`https://codefort-web.vercel.app/chat`](https://codefort-web.vercel.app/chat) | Interactive AI security assistant & unified git diff code rewriter |
 | **Extension Setup Guide** | [`https://codefort-web.vercel.app/extension`](https://codefort-web.vercel.app/extension) | Interactive step-by-step browser extension installer & pairing assistant |
 | **Backend API Engine** | [`https://codefort-lilac.vercel.app`](https://codefort-lilac.vercel.app) | FastAPI core, multi-engine detection, OSV client & Barq-AI explainability |
 | **API Documentation** | [`https://codefort-lilac.vercel.app/docs`](https://codefort-lilac.vercel.app/docs) | Interactive Swagger UI with OpenAPI 3.0 schemas and remediation endpoints |
-| **Chrome Extension** | [`v0.1.3 Chrome (.zip)`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-chrome-v0.1.3.zip) | Manifest V3 guard extension with inline GitHub diff `⚡ Fix with BARQAI` drawers |
-| **Firefox Extension** | [`v0.1.3 Firefox (.xpi)`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.xpi) / [`.zip`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.zip) | Mozilla AMO compliant WebExtension with Gecko ID (`strict_min_version: 115.0`) |
+| **Chrome Extension Package** | [`v0.1.3 Chrome (.zip)`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-chrome-v0.1.3.zip) | Manifest V3 guard extension with inline GitHub diff `⚡ Fix with BARQAI` drawers |
+| **Firefox Offline Binaries** | [`v0.1.3 Firefox (.xpi)`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.xpi) / [`.zip`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.zip) | Mozilla AMO compliant WebExtension package (`strict_min_version: 115.0`) |
 | **Malicious Test Repo** | [`codefort-sec/vulnerable-test-repo`](https://github.com/codefort-sec/vulnerable-test-repo) | Live attack playground with active adversarial PRs (#1, #2, #3) |
 | **Clean Baseline Repo** | [`codefort-sec/clean-test-repo`](https://github.com/codefort-sec/clean-test-repo) | Compliant baseline repository demonstrating verified PASS PRs (0 risk score) |
 | **GitHub Organization** | [`https://github.com/codefort-sec`](https://github.com/codefort-sec) | Organization holding platform monorepo and public demo repositories |
@@ -476,9 +478,17 @@ CodeFort Guard injects security verdicts directly into GitHub Pull Requests. It 
 
 ---
 
-### B. Mozilla Firefox (Developer & AMO Compliant)
+### B. Mozilla Firefox (Official Store & Developer Mode)
 
-1. **Download the Firefox Package**:
+> **🎉 Officially Reviewed and Approved on Mozilla Add-ons (AMO)!** Firefox users can install CodeFort Guard in a single click directly from the official store.
+
+#### Option 1: 1-Click Install from Firefox Add-ons (Recommended)
+1. Navigate to the official store page: [**`https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/`**](https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/)
+2. Click **+ Add to Firefox**.
+3. Accept the permission prompt. CodeFort Guard is permanently installed and active with automatic updates!
+
+#### Option 2: Offline / Developer Mode (.xpi or .zip)
+1. **Download the Package**:
    - Download [`codefort-guard-firefox-v0.1.3.xpi`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.xpi) or [`codefort-guard-firefox-v0.1.3.zip`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.zip).
 2. **Open Firefox Debugging**:
    - In Firefox, navigate to: `about:debugging#/runtime/this-firefox`
