@@ -42,3 +42,14 @@ export async function clearStoredAuth(): Promise<void> {
   return setStoredConfig({ token: null, paired: false });
 }
 
+export async function clearStoredConfig(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof chrome === "undefined" || !chrome.storage?.local) {
+      resolve();
+      return;
+    }
+    chrome.storage.local.remove(["token", "paired"], () => {
+      resolve();
+    });
+  });
+}

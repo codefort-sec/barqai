@@ -1,168 +1,139 @@
-/* CodeFort Guard Content Script Styles (Cyber Brutalist) */
+/* ==========================================================================
+   CODEFORT Guard Content Script Styles (Cyber Brutalist)
+   ========================================================================== */
 
-@keyframes cfFadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes cfPulse {
-  0%, 100% {
-    opacity: 0.35;
-    transform: scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.15);
-  }
-}
-
+/* PR Header Badge Container */
 .codefort-badge-container {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   position: relative;
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   margin-left: 8px;
   vertical-align: middle;
-  z-index: 9999;
-}
-
-.codefort-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  z-index: 99;
+  cursor: pointer;
+  user-select: none;
   background-color: #070807;
   border: 1px solid #343832;
   border-radius: 4px;
-  cursor: pointer;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   transition: all 0.15s ease-in-out;
-  user-select: none;
-  line-height: 1.4;
-  font-family: inherit;
-  color: #f2f2ed;
 }
 
-.codefort-badge:hover {
+.codefort-badge-container:hover {
   border-color: #d7ff35;
   box-shadow: 0 0 8px rgba(215, 255, 53, 0.25);
 }
 
-.codefort-pulse-dot {
-  display: inline-block;
-  color: #d7ff35;
-  animation: cfPulse 1.2s infinite ease-in-out;
-}
-
-.codefort-badge.verdict-pass {
+.codefort-badge-container.pass {
+  border-color: rgba(63, 185, 80, 0.4);
   color: #3fb950;
-  border-color: #238636;
 }
 
-.codefort-badge.verdict-pass:hover {
-  border-color: #3fb950;
-  box-shadow: 0 0 8px rgba(63, 185, 80, 0.3);
-}
-
-.codefort-badge.verdict-review_required {
-  color: #d29922;
-  border-color: #9e6a03;
+.codefort-badge-container.review {
+  border-color: rgba(255, 170, 0, 0.4);
   background-color: #121008;
+  color: #ffaa00;
 }
 
-.codefort-badge.verdict-review_required:hover {
-  border-color: #d29922;
-  box-shadow: 0 0 8px rgba(210, 153, 34, 0.3);
-}
-
-.codefort-badge.verdict-blocked {
-  color: #f85149;
-  border-color: #da3633;
+.codefort-badge-container.blocked {
+  border-color: rgba(255, 0, 85, 0.5);
   background-color: #160a0a;
+  color: #ff0055;
 }
 
-.codefort-badge.verdict-blocked:hover {
-  border-color: #f85149;
-  box-shadow: 0 0 10px rgba(248, 81, 73, 0.35);
+.codefort-badge-container.loading {
+  border-color: #343832;
+  color: #a2a59a;
 }
 
-.codefort-badge.verdict-pending {
-  color: #8b949e;
-  border-color: #30363d;
-}
-
-.codefort-badge.verdict-error {
-  color: #ff7b72;
-  border-color: #8e1519;
-  background-color: #140808;
-}
-
-.codefort-retry-action {
-  margin-left: 4px;
-  padding: 1px 5px;
-  background: rgba(255, 107, 94, 0.2);
-  border: 1px solid #ff6b5e;
-  border-radius: 2px;
-  font-size: 9px;
+.codefort-badge-container.error {
+  border-color: #ff6b5e;
   color: #ff6b5e;
-  font-weight: 800;
 }
 
-.codefort-score-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px 5px;
-  background: #141714;
-  border: 1px solid #343832;
-  border-radius: 3px;
+/* Badge Indicator Dot */
+.codefort-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.codefort-badge-dot.pass {
+  background-color: #00ff66;
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.6);
+}
+
+.codefort-badge-dot.review {
+  background-color: #ffaa00;
+  box-shadow: 0 0 6px rgba(255, 170, 0, 0.6);
+}
+
+.codefort-badge-dot.blocked {
+  background-color: #ff0055;
+  box-shadow: 0 0 6px rgba(255, 0, 85, 0.8);
+}
+
+.codefort-badge-dot.error {
+  background-color: #ff6b5e;
+}
+
+.codefort-badge-dot.pulse {
+  background-color: #d7ff35;
+  animation: codefortPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes codefortPulse {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px #d7ff35; }
+  100% { transform: scale(0.9); opacity: 0.5; }
+}
+
+.codefort-badge-label {
+  color: #a2a59a;
+  font-size: 10px;
+}
+
+.codefort-badge-verdict {
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.codefort-badge-verdict.pass { color: #00ff66; }
+.codefort-badge-verdict.review { color: #ffaa00; }
+.codefort-badge-verdict.blocked { color: #ff0055; }
+
+.codefort-badge-score {
   color: #d7ff35;
   font-size: 10px;
-  font-weight: 800;
 }
 
-.codefort-findings-tag {
-  opacity: 0.9;
-  font-size: 10px;
-  font-weight: 600;
-}
-
-.codefort-clean-check {
-  color: #3fb950;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-/* Dropdown / Summary Modal */
-.codefort-summary-popover {
+/* Popover Panel */
+.codefort-badge-popover {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  width: 380px;
-  max-width: calc(100vw - 32px);
+  width: 360px;
+  max-width: 90vw;
   background-color: #0d0f0d;
   border: 1px solid #343832;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 0 1px #222622;
-  border-radius: 6px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8), 0 0 10px rgba(215, 255, 53, 0.1);
+  border-radius: 4px;
   padding: 14px;
   color: #f2f2ed;
-  font-size: 12px;
-  z-index: 999999 !important;
+  font-size: 11px;
+  z-index: 1000;
   text-transform: none;
   letter-spacing: normal;
-  animation: cfFadeInDown 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  line-height: 1.4;
 }
 
-.codefort-summary-header {
+.codefort-popover-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -171,224 +142,163 @@
   margin-bottom: 10px;
 }
 
-.codefort-summary-brand {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.codefort-popover-title {
+  font-weight: 800;
+  font-size: 11px;
+  color: #d7ff35;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.codefort-brand-pill {
+.codefort-popover-verdict {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.codefort-popover-verdict.pass {
+  background: rgba(0, 255, 102, 0.15);
+  color: #00ff66;
+  border: 1px solid rgba(0, 255, 102, 0.3);
+}
+
+.codefort-popover-verdict.review {
+  background: rgba(255, 170, 0, 0.15);
+  color: #ffaa00;
+  border: 1px solid rgba(255, 170, 0, 0.3);
+}
+
+.codefort-popover-verdict.blocked {
+  background: rgba(255, 0, 85, 0.15);
+  color: #ff0055;
+  border: 1px solid rgba(255, 0, 85, 0.3);
+}
+
+.codefort-popover-desc {
+  margin: 0 0 10px 0;
+  color: #f2f2ed;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.codefort-popover-evidence {
+  margin-bottom: 12px;
+  background: #070807;
+  border: 1px solid #222622;
+  padding: 8px;
+  border-radius: 3px;
+}
+
+.codefort-popover-subtitle {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #d7ff35;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.codefort-popover-evidence ul {
+  margin: 0;
+  padding-left: 14px;
+}
+
+.codefort-popover-evidence li {
+  margin-bottom: 3px;
+  color: #a2a59a;
+  font-size: 10px;
+}
+
+.codefort-popover-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid #222622;
+  padding-top: 10px;
+}
+
+.codefort-popover-btn {
   background: #d7ff35;
   color: #070807;
-  font-size: 9px;
-  font-weight: 900;
-  padding: 1px 5px;
-  border-radius: 2px;
-  letter-spacing: 0.05em;
-}
-
-.codefort-summary-title {
-  font-weight: 700;
-  font-size: 12px;
-  color: #d7ff35;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.codefort-close-btn {
-  background: none;
-  border: none;
-  color: #a2a59a;
-  cursor: pointer;
-  font-size: 13px;
-  padding: 2px 4px;
-  line-height: 1;
-  transition: color 0.15s;
-}
-
-.codefort-close-btn:hover {
-  color: #f2f2ed;
-}
-
-/* Engine Coverage Bar */
-.codefort-coverage-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #1a1e1a;
-}
-
-.codefort-engine-chip {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 2px;
-  text-transform: uppercase;
-  background: #141714;
-  border: 1px solid #343832;
-  color: #a2a59a;
-}
-
-.codefort-engine-chip.chip-completed {
-  border-color: #238636;
-  color: #3fb950;
-  background: rgba(35, 134, 54, 0.1);
-}
-
-.codefort-engine-chip.chip-failed {
-  border-color: #da3633;
-  color: #f85149;
-  background: rgba(218, 54, 51, 0.1);
-}
-
-.codefort-engine-chip.chip-skipped,
-.codefort-engine-chip.chip-not_configured {
-  border-color: #222622;
-  color: #686d64;
-}
-
-/* Summary Sections */
-.codefort-summary-section {
-  margin-bottom: 10px;
-}
-
-.codefort-summary-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  color: #a2a59a;
-  letter-spacing: 0.05em;
-  margin-bottom: 3px;
-  font-weight: 600;
-}
-
-.codefort-summary-text {
-  color: #f2f2ed;
-  line-height: 1.4;
-  font-size: 11px;
-}
-
-.codefort-summary-evidence-item {
-  position: relative;
-  padding-left: 12px;
-  margin-bottom: 4px;
-  color: #f2f2ed;
-  line-height: 1.35;
-  font-size: 11px;
-}
-
-.codefort-summary-evidence-item::before {
-  content: "›";
-  position: absolute;
-  left: 0;
-  color: #ff6b5e;
-  font-weight: bold;
-}
-
-.codefort-summary-action-item {
-  color: #d7ff35;
-  font-size: 11px;
-  margin-bottom: 3px;
-}
-
-.codefort-clean-box {
-  padding: 10px;
-  background: rgba(63, 185, 80, 0.08);
-  border: 1px solid #238636;
-  border-radius: 4px;
-  margin-bottom: 8px;
-}
-
-.codefort-popover-footer {
-  margin-top: 12px;
-  padding-top: 8px;
-  border-top: 1px solid #222622;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.codefort-version-label {
-  font-size: 10px;
-  color: #686d64;
-}
-
-.codefort-footer-rescan {
-  background: transparent;
-  border: 1px solid #343832;
-  color: #a2a59a;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.15s;
+  border: 1px solid #d7ff35;
   font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s ease-in-out;
 }
 
-.codefort-footer-rescan:hover {
-  border-color: #d7ff35;
-  color: #d7ff35;
+.codefort-popover-btn:hover {
+  background: #bce628;
+  box-shadow: 0 0 8px rgba(215, 255, 53, 0.4);
 }
 
-.codefort-footer-link {
-  color: #d7ff35;
-  font-size: 11px;
+.codefort-popover-link {
+  color: #a2a59a;
   text-decoration: none;
+  font-size: 10px;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
-.codefort-footer-link:hover {
-  text-decoration: underline;
+.codefort-popover-link:hover {
+  color: #d7ff35;
 }
 
-/* Injected Diff Line Warning */
+/* ==========================================================================
+   Inline Diff Security Warnings
+   ========================================================================== */
+
 .codefort-diff-warning-row {
-  background-color: rgba(248, 81, 73, 0.08) !important;
-  border-left: 3px solid #ff6b5e !important;
+  background-color: rgba(255, 0, 85, 0.08) !important;
+  border-left: 3px solid #ff0055 !important;
 }
 
 .codefort-diff-warning-box {
-  padding: 6px 12px;
+  padding: 8px 12px;
   margin: 4px 8px;
   background-color: #0d0f0d;
-  border: 1px solid #ff6b5e;
+  border: 1px solid #343832;
+  border-left: 3px solid #ff0055;
   border-radius: 4px;
   font-family: ui-monospace, SFMono-Regular, monospace;
   font-size: 11px;
   color: #f2f2ed;
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
 }
 
 .codefort-diff-warning-tag {
-  background: #ff6b5e;
-  color: #070807;
+  background: #ff0055;
+  color: #ffffff;
   font-weight: 800;
-  padding: 1px 4px;
+  padding: 2px 6px;
   font-size: 9px;
   text-transform: uppercase;
   border-radius: 2px;
-  flex-shrink: 0;
+  letter-spacing: 0.05em;
 }
 
-.codefort-tag-critical {
-  background: #ff6b5e;
+.codefort-diff-warning-tag.high,
+.codefort-diff-warning-tag.critical {
+  background: #ff0055;
+}
+
+.codefort-diff-warning-tag.medium {
+  background: #ffaa00;
   color: #070807;
 }
 
-.codefort-tag-high {
-  background: #d29922;
-  color: #070807;
-}
-
-.codefort-tag-medium {
-  background: #e3b341;
-  color: #070807;
-}
-
-.codefort-tag-low {
-  background: #8b949e;
+.codefort-diff-warning-tag.low {
+  background: #3fb950;
   color: #070807;
 }
 
@@ -405,6 +315,128 @@
 .codefort-diff-warning-recom {
   color: #a2a59a;
   font-size: 10px;
+  line-height: 1.4;
+}
+
+.codefort-diff-fix-btn {
+  background: #d7ff35;
+  color: #070807;
+  border: 1px solid #d7ff35;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  white-space: nowrap;
+  transition: all 0.15s ease-in-out;
+}
+
+.codefort-diff-fix-btn:hover {
+  background: #bce628;
+  box-shadow: 0 0 8px rgba(215, 255, 53, 0.4);
+}
+
+/* 1-Click Remediation Drawer */
+.codefort-inline-remediation-drawer {
+  margin-top: 10px;
+  padding: 10px;
+  background: #050605;
+  border: 1px solid #343832;
+  border-radius: 4px;
+}
+
+.codefort-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+
+.codefort-verified-pill {
+  color: #00ff66;
+  background: rgba(0, 255, 102, 0.12);
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  padding: 1px 6px;
+  font-weight: 800;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.codefort-drawer-code-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.codefort-code-before,
+.codefort-code-after {
+  padding: 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: inherit;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.4;
+}
+
+.codefort-code-before {
+  background: rgba(255, 0, 85, 0.08);
+  border: 1px solid rgba(255, 0, 85, 0.3);
+  color: #ff9b94;
+}
+
+.codefort-code-after {
+  background: rgba(0, 255, 102, 0.08);
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  color: #7ee787;
+}
+
+.codefort-drawer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.codefort-apply-fix-btn {
+  background: #d7ff35;
+  color: #070807;
+  border: none;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s ease-in-out;
+}
+
+.codefort-apply-fix-btn:hover {
+  background: #bce628;
+  box-shadow: 0 0 8px rgba(215, 255, 53, 0.4);
+}
+
+.codefort-copy-fix-btn {
+  background: transparent;
+  color: #a2a59a;
+  border: 1px solid #343832;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.codefort-copy-fix-btn:hover {
+  border-color: #a2a59a;
+  color: #f2f2ed;
 }
 
 /* Floating Alert Banner for Active PR Navigation */
@@ -562,206 +594,4 @@
 .codefort-alert-btn-secondary:hover {
   color: #f2f2ed;
   border-color: #a2a59a;
-}
-
-/* Inline Remediation Drawer */
-.codefort-diff-fix-btn {
-  background: #d7ff35;
-  color: #070807;
-  border: 1px solid #d7ff35;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  cursor: pointer;
-  border-radius: 3px;
-  white-space: nowrap;
-  transition: all 0.15s ease-in-out;
-}
-
-.codefort-diff-fix-btn:hover {
-  background: #bce628;
-  box-shadow: 0 0 6px rgba(215, 255, 53, 0.4);
-}
-
-.codefort-inline-remediation-drawer {
-  margin-top: 8px;
-  padding: 8px;
-  background: #050605;
-  border: 1px solid #343832;
-  border-radius: 4px;
-}
-
-.codefort-drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  font-size: 10px;
-}
-
-.codefort-verified-pill {
-  color: #3fb950;
-  background: rgba(63, 185, 80, 0.12);
-  border: 1px solid rgba(63, 185, 80, 0.3);
-  padding: 1px 5px;
-  font-weight: 700;
-  border-radius: 2px;
-  text-transform: uppercase;
-}
-
-.codefort-drawer-code-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.codefort-code-before,
-.codefort-code-after {
-  padding: 6px;
-  border-radius: 3px;
-  font-size: 10px;
-  font-family: inherit;
-  overflow-x: auto;
-  white-space: pre;
-  line-height: 1.35;
-}
-
-.codefort-code-before {
-  background: rgba(248, 81, 73, 0.1);
-  border: 1px solid rgba(248, 81, 73, 0.3);
-  color: #ff9b94;
-}
-
-.codefort-code-after {
-  background: rgba(63, 185, 80, 0.1);
-  border: 1px solid rgba(63, 185, 80, 0.3);
-  color: #7ee787;
-}
-
-.codefort-drawer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-}
-
-.codefort-apply-fix-btn {
-  background: #d7ff35;
-  color: #070807;
-  border: none;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-
-.codefort-apply-fix-btn:hover {
-  background: #bce628;
-}
-
-.codefort-copy-fix-btn {
-  background: transparent;
-  color: #a2a59a;
-  border: 1px solid #343832;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 4px 10px;
-  cursor: pointer;
-  border-radius: 3px;
-}
-
-.codefort-copy-fix-btn:hover {
-  color: #f2f2ed;
-  border-color: #a2a59a;
-}
-
-/* 1-Click Clean Remediation Patch Box */
-.codefort-patch-container {
-  margin-top: 10px;
-  background: #080908;
-  border: 1px solid #d7ff35;
-  border-radius: 4px;
-  padding: 8px 10px;
-}
-
-.codefort-patch-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.codefort-patch-badge {
-  background: #d7ff35;
-  color: #070807;
-  font-size: 8px;
-  font-weight: 900;
-  padding: 1px 4px;
-  border-radius: 2px;
-  letter-spacing: 0.05em;
-}
-
-.codefort-patch-title {
-  font-size: 10px;
-  font-weight: 700;
-  color: #f2f2ed;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.codefort-patch-copy-btn {
-  background: #141714;
-  border: 1px solid #343832;
-  color: #d7ff35;
-  font-family: inherit;
-  font-size: 9px;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.codefort-patch-copy-btn:hover {
-  background: #d7ff35;
-  color: #070807;
-}
-
-.codefort-patch-code {
-  background: #040504;
-  border: 1px solid #222622;
-  border-radius: 2px;
-  padding: 6px 8px;
-  font-size: 10px;
-  line-height: 1.4;
-  color: #3fb950;
-  max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
-.codefort-copy-fix-btn {
-  background: #141714;
-  border: 1px solid #343832;
-  color: #a2a59a;
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 4px 8px;
-  cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.15s ease;
-}
-
-.codefort-copy-fix-btn:hover {
-  border-color: #a2a59a;
-  color: #f2f2ed;
 }

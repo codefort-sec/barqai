@@ -12,8 +12,14 @@ import {
   pairWithToken,
   triggerPRScan,
 } from "../shared/api";
-import { clearStoredAuth, getStoredConfig } from "../shared/storage";
+import { clearStoredAuth, clearStoredConfig, getStoredConfig } from "../shared/storage";
 import { ExtensionMessage, ExtensionResponse } from "../shared/types";
+import { parsePRUrl } from "../utils/github-url-parser";
+
+// Configure Chrome Side Panel behavior
+if (typeof chrome !== "undefined" && (chrome as any).sidePanel?.setPanelBehavior) {
+  (chrome as any).sidePanel.setPanelBehavior({ openPanelOnActionClick: false }).catch(() => {});
+}
 
 // Short-lived memory cache to avoid thrashing GitHub DOM navigations
 const cache = new Map<string, { timestamp: number; data: any }>();
@@ -36,17 +42,6 @@ function invalidateCacheForPR(repo: string, pr: number) {
   cache.delete(`status:${repo}:${pr}`);
   cache.delete(`findings:${repo}:${pr}`);
   cache.delete(`summary:${repo}:${pr}`);
-}
-
-// Parse GitHub PR URL: https://github.com/:owner/:repo/pull/:number
-function parsePRUrl(url?: string): { repo: string; pr: number } | null {
-  if (!url) return null;
-  const match = url.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
-  if (!match) return null;
-  return {
-    repo: `${match[1]}/${match[2]}`,
-    pr: parseInt(match[3], 10),
-  };
 }
 
 /**
@@ -282,10 +277,50 @@ async function handleMessage(
       return { success: true, data: { status: "AWOKEN" } };
     }
 
+    case "OPEN_SIDEPANEL": {
+      try {
+        if (_sender.tab?.windowId) {
+          await (chrome as any).sidePanel?.open?.({ windowId: _sender.tab.windowId });
+          return { success: true, data: { opened: true } };
+        }
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (activeTab?.windowId) {
+          await (chrome as any).sidePanel?.open?.({ windowId: activeTab.windowId });
+          return { success: true, data: { opened: true } };
+        }
+        return {
+          success: false,
+          error: { code: "NO_ACTIVE_WINDOW", message: "No active window found to open side panel." },
+        };
+      } catch (err: any) {
+        return {
+          success: false,
+          error: { code: "SIDE_PANEL_ERROR", message: err.message || "Failed to open side panel." },
+        };
+      }
+    }
+
+    case "DISCONNECT": {
+      try {
+        await clearStoredConfig();
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (activeTab?.id) {
+          await chrome.action.setBadgeText({ tabId: activeTab.id, text: "" });
+        }
+        return { success: true, data: { disconnected: true } };
+      } catch (err: any) {
+        return {
+          success: false,
+          error: { code: "DISCONNECT_ERROR", message: err.message || "Failed to disconnect." },
+        };
+      }
+    }
+
     default:
       return {
         success: false,
         error: { code: "UNSUPPORTED_MESSAGE", message: "Unsupported message type." },
       };
+
   }
 }

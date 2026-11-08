@@ -73,12 +73,38 @@ const firefoxZip = path.join(projectRoot, "codefort-guard-firefox-v0.1.3.zip");
 const firefoxXpi = path.join(projectRoot, "codefort-guard-firefox-v0.1.3.xpi");
 const legacyZip = path.join(projectRoot, "codefort-guard-v0.1.3.zip");
 
+function createZip(sourceDir, destZip) {
+  if (fs.existsSync(destZip)) {
+    fs.unlinkSync(destZip);
+  }
+  try {
+    if (process.platform === "win32") {
+      execSync(`tar -a -c -f "${destZip}" *`, { cwd: sourceDir, stdio: "pipe" });
+      return;
+    }
+  } catch {
+    // Fall through to next method
+  }
+  try {
+    execSync(`zip -r "${destZip}" .`, { cwd: sourceDir, stdio: "pipe" });
+  } catch {
+    if (process.platform === "win32") {
+      execSync(
+        `powershell -NoProfile -Command "Compress-Archive -Path '${sourceDir}\\*' -DestinationPath '${destZip}' -Force"`,
+        { stdio: "inherit" }
+      );
+    } else {
+      throw new Error(`Failed to create zip archive: ${destZip}`);
+    }
+  }
+}
+
 // Zip Chrome
-execSync(`cd "${chromeDir}" && zip -r "${chromeZip}" .`, { stdio: "inherit" });
+createZip(chromeDir, chromeZip);
 fs.copyFileSync(chromeZip, legacyZip);
 
 // Zip Firefox
-execSync(`cd "${firefoxDir}" && zip -r "${firefoxZip}" .`, { stdio: "inherit" });
+createZip(firefoxDir, firefoxZip);
 fs.copyFileSync(firefoxZip, firefoxXpi);
 
 // Sync to Web Public Downloads
