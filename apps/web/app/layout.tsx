@@ -77,6 +77,9 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  verification: {
+    google: "q8BWZlYhmKeyf02yNufmghk7j6KQCe-crJJ--BKIL7I",
+  },
 };
 
 const jsonLd = {
@@ -123,6 +126,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        <meta
+          name="google-site-verification"
+          content="q8BWZlYhmKeyf02yNufmghk7j6KQCe-crJJ--BKIL7I"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
