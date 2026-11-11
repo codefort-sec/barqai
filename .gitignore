@@ -38,4 +38,7 @@ apps/extension/dist/
 # Local staging
 codefort/
 
-
+# ML Checkpoints & Intermediate Weights
+models/**/checkpoint-*/
+*.pt
+*.pth
