@@ -2333,6 +2333,549 @@ Clean. Standard numerical arithmetic with input validation bounds.""",
 )
 
 
+
+# 41. CVE-2022-20001: Git fsmonitor command execution
+add_sample(
+    """## Pull Request Diff
++++ powerline/gitstatus.py
++ def get_base_command(self, cwd, use_dash_c):
++     if use_dash_c:
++         return ['git', '-C', cwd]
++     while cwd and cwd != os.sep:
++         gitdir = os.path.join(cwd, '.git')
++         if os.path.isdir(gitdir):
++             return ['git', '--git-dir=%s' % gitdir, '--work-tree=%s' % cwd]
+## Static Analysis Findings
+Command Injection: git invocation without neutralizing core.fsmonitor config [CVE-2022-20001]""",
+    "block",
+    "PR invokes git command in target directories without disabling core.fsmonitor configuration overrides.",
+    "Static analyzer detected git subprocess execution vulnerable to CVE-2022-20001. Untrusted repositories can configure malicious fsmonitor hooks executing arbitrary commands upon git status.",
+    "Opening or querying status of a malicious git repository executes arbitrary attacker-controlled code on developer machines.",
+    ["Arbitrary command execution via git core.fsmonitor hook", "Verified vulnerability CVE-2022-20001", "Affects developer workstations running git tools"],
+    "--- a/powerline/gitstatus.py\n+++ b/powerline/gitstatus.py\n@@ -3,1 +3,1 @@\n-            return ['git', '-C', cwd]\n+            return ['git', '-c', 'core.fsmonitor=', '-C', cwd]",
+    0.99
+)
+
+# 42. CVE-2016-3957: Padding oracle / session key disclosure
+add_sample(
+    """## Pull Request Diff
++++ gluon/sessions.py
++ def pad(data, key=None):
++     if not key:
++         key = DEFAULT_FALLBACK_KEY
++     return aes_encrypt(data, key)
+## Static Analysis Findings
+Cryptographic vulnerability: static default key used when key is uninitialized [CVE-2016-3957]""",
+    "block",
+    "PR introduces session encryption pad function that falls back to a static constant key.",
+    "Static security analysis identified predictable fallback key in session encryption routine matching CVE-2016-3957.",
+    "Using a static fallback encryption key allows remote attackers to decrypt and forge session cookies, leading to complete authentication bypass.",
+    ["Hardcoded fallback encryption key", "Vulnerable to session forgery and decryption", "Verified CVE-2016-3957 vulnerability pattern"],
+    "--- a/gluon/sessions.py\n+++ b/gluon/sessions.py\n@@ -2,3 +2,3 @@\n-    if not key:\n-        key = DEFAULT_FALLBACK_KEY\n+    if not key:\n+        raise ValueError('Session encryption key must be explicitly configured')",
+    0.98
+)
+
+# 43. CVE-2023-50423: JWT audience validation bypass
+add_sample(
+    """## Pull Request Diff
++++ security/token.py
++ def validate_audience(token_claims, expected_aud):
++     aud = token_claims.get('aud', '')
++     return expected_aud in aud
+## Static Analysis Findings
+Improper Authentication: partial substring match on JWT audience claim [CVE-2023-50423]""",
+    "block",
+    "PR validates JWT audience claim using substring membership check instead of strict equality.",
+    "Static analysis identified insecure substring matching on token 'aud' claim matching CVE-2023-50423.",
+    "Substring matching allows tokens intended for a different, low-privileged service (e.g. 'aud-low') to be accepted by higher-privileged services (e.g. 'aud-low-admin').",
+    ["Improper token audience validation", "Vulnerable to token reuse across trust boundaries", "Documented CVE-2023-50423 vulnerability pattern"],
+    "--- a/security/token.py\n+++ b/security/token.py\n@@ -3,1 +3,1 @@\n-    return expected_aud in aud\n+    return aud == expected_aud if isinstance(aud, str) else expected_aud in aud and len(aud) == 1",
+    0.99
+)
+
+# 44. CVE-2014-4657: Safe eval sandbox escape
+add_sample(
+    """## Pull Request Diff
++++ tools/safe_eval.py
++ def visit_Call(self, node):
++     if isinstance(node.func, ast.Attribute):
++         return self.visit(node.func)
++     return self.generic_visit(node)
+## Static Analysis Findings
+Sandbox escape in AST safe_eval: object attribute method calls permitted [CVE-2014-4657]""",
+    "block",
+    "PR relaxes AST visitor in safe_eval, allowing arbitrary attribute calls on Python objects.",
+    "Static analyzer detected sandbox breakout vector via Python object class hierarchy matching CVE-2014-4657.",
+    "Permitting attribute calls on objects in safe_eval allows untrusted scripts to traverse __class__.__subclasses__() and execute os.system or subprocess methods.",
+    ["Python sandbox escape via attribute traversal", "Remote code execution in eval engine", "Documented CVE-2014-4657 vulnerability"],
+    "--- a/tools/safe_eval.py\n+++ b/tools/safe_eval.py\n@@ -2,2 +2,3 @@\n+    if isinstance(node.func, ast.Attribute) and node.func.attr.startswith('_'):\n+        raise SecurityError('Access to private attributes is prohibited')\n     return self.generic_visit(node)",
+    0.99
+)
+
+# 45. CVE-2019-9644: Path traversal in file handler
+add_sample(
+    """## Pull Request Diff
++++ http/files.py
++ def get_static_file(filename):
++     full_path = os.path.join(STATIC_ROOT, filename)
++     with open(full_path, 'rb') as f:
++         return f.read()
+## Static Analysis Findings
+Directory traversal in file retrieval: user parameter concatenated without anchor check [CVE-2019-9644]""",
+    "block",
+    "PR passes unsanitized user-supplied filename into os.path.join for file reading.",
+    "Static analysis identified path traversal vulnerability matching CVE-2019-9644.",
+    "Supplying relative paths like '../../etc/passwd' breaks out of STATIC_ROOT, disclosing sensitive system files and credentials to unauthorized users.",
+    ["Arbitrary file read via directory traversal", "Lack of path boundary enforcement", "High-severity file disclosure flaw"],
+    "--- a/http/files.py\n+++ b/http/files.py\n@@ -2,2 +2,4 @@\n-    full_path = os.path.join(STATIC_ROOT, filename)\n+    full_path = os.path.abspath(os.path.join(STATIC_ROOT, filename))\n+    if not full_path.startswith(os.path.abspath(STATIC_ROOT)):\n+        raise PermissionError('Access denied')",
+    0.99
+)
+
+# 46. CVE-2021-32633: Path traversal via dictionary formatting
+add_sample(
+    """## Pull Request Diff
++++ core/templates.py
++ def render_view(template_dict, key):
++     template_file = f"/var/templates/{key}.html"
++     return open(template_file).read()
+## Static Analysis Findings
+Path Traversal: unvalidated dictionary key formatted into file path [CVE-2021-32633]""",
+    "block",
+    "PR formats dictionary key parameter directly into server file path string.",
+    "Static analyzer detected path traversal vulnerability via string interpolation matching CVE-2021-32633.",
+    "Attackers passing keys containing '../' can force the template engine to load arbitrary system files, triggering data leakage or server error disclosure.",
+    ["Path traversal via key string interpolation", "Missing character whitelist on template names", "Documented CVE-2021-32633 vulnerability"],
+    "--- a/core/templates.py\\n+++ b/core/templates.py\\n@@ -2,2 +2,4 @@\\n-    template_file = f\\\"/var/templates/{key}.html\\\"\\n+    if not re.match(r'^[a-zA-Z0-9_-]+$', key):\\n+        raise ValueError('Invalid template identifier')\\n+    template_file = f\\\"/var/templates/{key}.html\\\"",
+    0.98
+)
+
+# 47. CVE-2023-47037: Mass assignment in populate_obj
+add_sample(
+    """## Pull Request Diff
++++ forms/handlers.py
++ def update_account(form, account):
++     form.populate_obj(account)
++     db.session.commit()
+## Static Analysis Findings
+Mass Assignment: populate_obj maps untrusted form fields to database entity [CVE-2023-47037]""",
+    "block",
+    "PR invokes form.populate_obj without field restrictions, binding all form inputs to model.",
+    "Static code review flagged mass assignment vulnerability matching CVE-2023-47037.",
+    "Attackers can inject hidden fields (e.g. is_admin=True, role='superuser') into HTTP form submissions to elevate privileges during standard profile updates.",
+    ["Mass assignment / parameter tampering vulnerability", "Unrestricted object attribute binding", "Privilege escalation vector in web forms"],
+    "--- a/forms/handlers.py\n+++ b/forms/handlers.py\n@@ -2,2 +2,3 @@\n-    form.populate_obj(account)\n+    for field in ['name', 'bio']:\n+        setattr(account, field, getattr(form, field).data)",
+    0.98
+)
+
+# 48. CVE-2023-46121: SSRF in media extractor
+add_sample(
+    """## Pull Request Diff
++++ extractors/media.py
++ import urllib.request
++ def extract_media(media_url):
++     return urllib.request.urlopen(media_url).read()
+## Static Analysis Findings
+Server-Side Request Forgery (SSRF): unvalidated user URL passed to urllib.request [CVE-2023-46121]""",
+    "block",
+    "PR makes backend HTTP requests to user-supplied media URLs using urllib.request.urlopen.",
+    "Static analyzer detected Server-Side Request Forgery vulnerability matching CVE-2023-46121.",
+    "Attackers can supply internal URLs (e.g. http://169.254.169.254/latest/meta-data/ or http://localhost:8080/admin) to access cloud credentials and internal APIs.",
+    ["Server-Side Request Forgery in media extraction", "Unrestricted outbound HTTP request to user URL", "Risk of cloud instance metadata theft"],
+    "--- a/extractors/media.py\n+++ b/extractors/media.py\n@@ -3,1 +3,3 @@\n-    return urllib.request.urlopen(media_url).read()\n+    if not is_safe_public_url(media_url):\n+        raise ValueError('Invalid or non-public URL')\n+    return safe_http_get(media_url)",
+    0.99
+)
+
+# 49. CVE-2012-3540: Broken tenant isolation in Keystone
+add_sample(
+    """## Pull Request Diff
++++ keystone/tenants.py
++ def update_user_tenant(context, user_id, target_tenant_id):
++     return db.user_update(user_id, {'tenant_id': target_tenant_id})
+## Static Analysis Findings
+Improper Access Control: missing authorization check on target tenant boundary [CVE-2012-3540]""",
+    "block",
+    "PR updates user tenant assignment without verifying caller authorization on target tenant.",
+    "Static analysis identified broken tenant isolation matching CVE-2012-3540.",
+    "Non-admin users can assign themselves to arbitrary organization tenants, gaining unauthorized access to foreign tenant infrastructure and data.",
+    ["Broken multi-tenant isolation", "Cross-tenant privilege escalation", "Documented CVE-2012-3540 access control flaw"],
+    "--- a/keystone/tenants.py\n+++ b/keystone/tenants.py\n@@ -2,1 +2,3 @@\n+    if not context.is_admin and context.tenant_id != target_tenant_id:\n+        raise Unauthorized('Cannot switch to unauthorized tenant')\n     return db.user_update(user_id, {'tenant_id': target_tenant_id})",
+    0.99
+)
+
+# 50. CVE-2020-6802: Mutation XSS in nested SVG
+add_sample(
+    """## Pull Request Diff
++++ sanitizer/html.py
++ def sanitize(html_string):
++     return lxml.html.tostring(lxml.html.fromstring(html_string))
+## Static Analysis Findings
+Mutation XSS: HTML parsing without round-trip normalization allows nested SVG payload bypass [CVE-2020-6802]""",
+    "block",
+    "PR performs naive single-pass HTML serialization susceptible to mutation XSS.",
+    "Static analysis flagged vulnerability to DOM mutation XSS matching CVE-2020-6802.",
+    "Browsers mutate malformed SVG and MathML elements during DOM parsing. Single-pass sanitizers miss nested script payloads that become active only upon browser rendering.",
+    ["Mutation Cross-Site Scripting (mXSS) vulnerability", "DOM parsing discrepancy between server and browser", "Documented CVE-2020-6802 bypass pattern"],
+    "--- a/sanitizer/html.py\n+++ b/sanitizer/html.py\n@@ -2,1 +2,2 @@\n-    return lxml.html.tostring(lxml.html.fromstring(html_string))\n+    import bleach\n+    return bleach.clean(html_string, tags=['b', 'i', 'p', 'a'])",
+    0.99
+)
+
+
+# 41. Git subprocess wrapper without repo validation
+add_sample(
+    """## Pull Request Diff
++++ tools/git_cli.py
++ def query_branch(repo_path):
++     return subprocess.check_output(['git', 'branch'], cwd=repo_path)
+## Static Analysis Findings
+Subprocess execution in dynamic working directory without repository provenance check""",
+    "review",
+    "PR executes git command using dynamic repo_path parameter as working directory.",
+    "Static security audit flagged unvalidated working directory passed to git subprocess.",
+    "Running git commands inside untrusted directories risks invoking malicious repository configuration hooks. Review required to ensure repo_path is validated against an allowlist.",
+    ["Unvalidated directory path in git subprocess execution", "Potential repository configuration hook abuse", "Requires directory provenance verification"],
+    None,
+    0.88
+)
+
+# 42. Session key rotation without active revocation check
+add_sample(
+    """## Pull Request Diff
++++ auth/rotation.py
++ def rotate_keys(new_key):
++     app.config['SECRET_KEY'] = new_key
+## Static Analysis Findings
+Secret key updated dynamically without invalidating existing session tokens in store""",
+    "review",
+    "PR updates application secret key without invalidating previously issued session tokens.",
+    "Static review flagged session key update without concurrent session invalidation.",
+    "While updating secrets is good hygiene, failing to invalidate active sessions leaves old compromised sessions active until expiry.",
+    ["Incomplete session lifecycle rotation", "Active sessions not invalidated upon key change", "Requires session store flush review"],
+    None,
+    0.86
+)
+
+# 43. JWT audience check using regex matching
+add_sample(
+    """## Pull Request Diff
++++ middleware/jwt.py
++ def check_aud(aud_claim):
++     return bool(re.search(r'service-api', aud_claim))
+## Static Analysis Findings
+Regular expression search on JWT audience claim (potential over-matching)""",
+    "review",
+    "PR verifies JWT audience claim using re.search rather than strict equality.",
+    "Static analysis detected partial regex match on security-critical audience claim.",
+    "Regex search may match unexpected audiences (e.g. 'untrusted-service-api-sandbox'). Exact equality matching is recommended.",
+    ["Loose regex matching on token audience", "Potential over-matching on untrusted service tokens", "Recommended exact string equality"],
+    None,
+    0.87
+)
+
+# 44. Custom AST visitor for mathematical evaluation
+add_sample(
+    """## Pull Request Diff
++++ utils/calc.py
++ class SimpleEval(ast.NodeVisitor):
++     def visit_BinOp(self, node):
++         return self.visit(node.left) + self.visit(node.right)
+## Static Analysis Findings
+Custom AST expression evaluator implemented without depth bounds limit""",
+    "review",
+    "PR introduces custom AST node visitor for binary expression evaluation.",
+    "Static analysis identified custom AST interpreter lacking recursion depth limiting.",
+    "While pure AST visitors prevent arbitrary code execution, evaluating deeply nested expressions can cause Python RecursionError crashes.",
+    ["Unbounded recursion in custom AST visitor", "Potential Denial of Service via stack exhaustion", "Requires recursion limit guardrail"],
+    None,
+    0.89
+)
+
+# 45. Path normalization using normpath without anchor check
+add_sample(
+    """## Pull Request Diff
++++ storage/paths.py
++ def normalize_path(user_input):
++     return os.path.normpath(user_input)
+## Static Analysis Findings
+Path normalization applied without base directory containment assertion""",
+    "review",
+    "PR applies os.path.normpath to user input without anchoring to a base root.",
+    "Static code review flagged normalization that does not prevent traversal out of root if path is relative.",
+    "normpath resolves '../' sequences but does not ensure the resolved path stays within the application folder boundary.",
+    ["Path normalization without root containment check", "Potential directory traversal if combined with relative paths", "Requires is_relative_to or abspath check"],
+    None,
+    0.87
+)
+
+# 46. User dictionary key in cache key generation
+add_sample(
+    """## Pull Request Diff
++++ cache/keys.py
++ def make_cache_key(prefix, user_key):
++     return f"{prefix}:{user_key}"
+## Static Analysis Findings
+User-supplied key concatenated into cache key without delimiter escaping""",
+    "review",
+    "PR builds cache keys by concatenating user parameter with colon delimiter.",
+    "Static analysis detected unescaped user parameter in cache key namespace.",
+    "If user_key contains colons, attackers can pollute or overwrite keys across different cache namespaces (cache key collision).",
+    ["Cache namespace collision risk", "Unescaped delimiter in cache key generation", "Recommended hashing or sanitizing user key"],
+    None,
+    0.86
+)
+
+# 47. Form population helper with dynamic field exclusions
+add_sample(
+    """## Pull Request Diff
++++ forms/binder.py
++ def bind_form(model, data, exclude_fields=None):
++     for k, v in data.items():
++         if not exclude_fields or k not in exclude_fields:
++             setattr(model, k, v)
+## Static Analysis Findings
+Dynamic attribute binding on data model using exclusion list instead of strict inclusion""",
+    "review",
+    "PR binds dictionary keys to model attributes using exclusion list rather than explicit allowlist.",
+    "Static analyzer flagged blocklist-based property binding on database models.",
+    "Exclusion lists are fragile. Adding new sensitive columns to models in the future can unintentionally expose them to user tampering.",
+    ["Blocklist-based attribute binding", "Fragile security against model schema updates", "Recommended explicit field allowlist"],
+    None,
+    0.88
+)
+
+# 48. Media extractor with custom URL scheme validation
+add_sample(
+    """## Pull Request Diff
++++ media/fetcher.py
++ def validate_media_url(url):
++     return url.startswith('https://')
+## Static Analysis Findings
+URL scheme validation checks prefix without verifying host against internal IP addresses""",
+    "review",
+    "PR validates media URLs using https:// prefix check without IP address resolution.",
+    "Static analysis detected incomplete URL validation for backend fetcher.",
+    "Using https:// does not prevent SSRF to internal cloud endpoints that expose HTTPS services on private subnets.",
+    ["Incomplete SSRF validation for outbound HTTP requests", "Missing private IP address resolution filter", "Requires DNS resolution and private CIDR blocking"],
+    None,
+    0.89
+)
+
+# 49. Tenant switch handler relying on client-supplied header
+add_sample(
+    """## Pull Request Diff
++++ api/tenant.py
++ def get_current_tenant(request):
++     return request.headers.get('X-Tenant-ID', default_tenant)
+## Static Analysis Findings
+Tenant context derived from client HTTP header without cryptographically signed claims""",
+    "review",
+    "PR determines multi-tenant context from unauthenticated X-Tenant-ID HTTP header.",
+    "Static analyzer flagged reliance on client-controlled header for tenancy isolation.",
+    "If not preceded by gateway authorization, clients can tamper with the header to inspect data across different organizational tenants.",
+    ["Client-controlled header used for tenancy boundary", "Risk of cross-tenant data access if gateway is misconfigured", "Requires signed token claims for tenant ID"],
+    None,
+    0.90
+)
+
+# 50. HTML sanitization using custom regex replace
+add_sample(
+    """## Pull Request Diff
++++ utils/clean.py
++ def remove_scripts(html):
++     return re.sub(r'<script.*?>.*?</script>', '', html, flags=re.DOTALL | re.IGNORECASE)
+## Static Analysis Findings
+HTML sanitization implemented using regular expressions instead of HTML parser""",
+    "review",
+    "PR attempts to strip HTML script tags using regular expression pattern matching.",
+    "Static security analyzer flagged regex-based HTML sanitization.",
+    "Regular expressions cannot reliably parse HTML context. Attackers bypass regex filters using event handlers (onerror=), javascript: URIs, or broken tags.",
+    ["Fragile regex-based HTML sanitization", "Susceptible to XSS bypasses via event handlers and malformed markup", "Recommended migration to DOMPurify or Bleach"],
+    None,
+    0.92
+)
+
+
+# 41. Git command with -c core.fsmonitor= (CVE-2022-20001 patch)
+add_sample(
+    """## Pull Request Diff
++++ powerline/gitstatus.py
+- return ['git', '-C', cwd]
++ return ['git', '-c', 'core.fsmonitor=', '-C', cwd]
+## Static Analysis Findings
+Clean. Git invocation neutralizes core.fsmonitor configuration injection.""",
+    "pass",
+    "PR parameterizes git subprocess calls with core.fsmonitor= to prevent command execution.",
+    "Static analysis confirmed active defense against CVE-2022-20001 by disabling fsmonitor hook.",
+    "Protects git status queries from executing arbitrary commands from untrusted repositories.",
+    [],
+    None,
+    1.0
+)
+
+# 42. Cryptographically secure random session initialization (CVE-2016-3957 patch)
+add_sample(
+    """## Pull Request Diff
++++ gluon/sessions.py
+- if not key: key = DEFAULT_FALLBACK_KEY
++ if not key: raise ValueError("Session encryption key must be explicitly configured")
+## Static Analysis Findings
+Clean. Insecure default key fallback removed. Session encryption key mandatory.""",
+    "pass",
+    "PR enforces mandatory explicit session encryption key, removing static fallback.",
+    "Static analyzer verified elimination of predictable fallback key vulnerability CVE-2016-3957.",
+    "Guarantees session cookies cannot be forged using default cryptographic keys.",
+    [],
+    None,
+    1.0
+)
+
+# 43. Strict JWT audience validation (CVE-2023-50423 patch)
+add_sample(
+    """## Pull Request Diff
++++ security/token.py
+- return expected_aud in aud
++ return aud == expected_aud if isinstance(aud, str) else expected_aud in aud and len(aud) == 1
+## Static Analysis Findings
+Clean. Strict JWT audience claim equality validation.""",
+    "pass",
+    "PR implements strict audience claim verification ensuring exact string equality.",
+    "Static analysis confirmed mitigation of audience bypass vulnerability CVE-2023-50423.",
+    "Prevents cross-service token reuse by rejecting loose substring audience matches.",
+    [],
+    None,
+    1.0
+)
+
+# 44. Pure AST visitor with private attribute access check (CVE-2014-4657 patch)
+add_sample(
+    """## Pull Request Diff
++++ tools/safe_eval.py
+- return self.visit(node.func)
++ if isinstance(node.func, ast.Attribute) and node.func.attr.startswith('_'):
++     raise SecurityError("Access to private attributes prohibited")
+## Static Analysis Findings
+Clean. AST visitor strictly blocks traversal of private and dunder object attributes.""",
+    "pass",
+    "PR blocks attribute traversal to private and dunder properties in AST safe_eval.",
+    "Static analyzer confirmed active prevention of Python sandbox escape CVE-2014-4657.",
+    "Prevents untrusted expressions from reaching __subclasses__ and executing arbitrary code.",
+    [],
+    None,
+    1.0
+)
+
+# 45. Secure static file retrieval with abspath check (CVE-2019-9644 patch)
+add_sample(
+    """## Pull Request Diff
++++ http/files.py
+- full_path = os.path.join(STATIC_ROOT, filename)
++ full_path = os.path.abspath(os.path.join(STATIC_ROOT, filename))
++ if not full_path.startswith(os.path.abspath(STATIC_ROOT)):
++     raise PermissionError("Access denied")
+## Static Analysis Findings
+Clean. Robust path containment verification preventing directory traversal.""",
+    "pass",
+    "PR verifies that resolved static file path resides strictly inside STATIC_ROOT.",
+    "Static analyzer verified complete mitigation of directory traversal flaw CVE-2019-9644.",
+    "Neutralizes relative '../' path traversal vectors before opening file handles.",
+    [],
+    None,
+    1.0
+)
+
+# 46. Sanitized dictionary key mapping with regex (CVE-2021-32633 patch)
+add_sample(
+    """## Pull Request Diff
++++ core/templates.py
+- template_file = f"/var/templates/{key}.html"
++ if not re.match(r'^[a-zA-Z0-9_-]+$', key):
++     raise ValueError("Invalid template identifier")
++ template_file = f"/var/templates/{key}.html"
+## Static Analysis Findings
+Clean. Strict regex whitelist validation on template identifier parameter.""",
+    "pass",
+    "PR validates template key against strict alphanumeric whitelist before path construction.",
+    "Static analysis confirmed mitigation of path traversal vulnerability CVE-2021-32633.",
+    "Guarantees template keys cannot contain directory separators or dot-dot traversal sequences.",
+    [],
+    None,
+    1.0
+)
+
+# 47. Explicit schema-based form binding (CVE-2023-47037 patch)
+add_sample(
+    """## Pull Request Diff
++++ forms/handlers.py
+- form.populate_obj(account)
++ for field in ['name', 'bio']:
++     setattr(account, field, getattr(form, field).data)
+## Static Analysis Findings
+Clean. Explicit attribute allowlist prevents mass assignment of sensitive model fields.""",
+    "pass",
+    "PR replaces unrestricted populate_obj with explicit attribute allowlist.",
+    "Static analysis confirmed resolution of mass assignment vulnerability CVE-2023-47037.",
+    "Prevents malicious form submissions from tampering with administrative or role attributes.",
+    [],
+    None,
+    1.0
+)
+
+# 48. SSRF-safe HTTP client with private IP filtering (CVE-2023-46121 patch)
+add_sample(
+    """## Pull Request Diff
++++ extractors/media.py
+- return urllib.request.urlopen(media_url).read()
++ if not is_safe_public_url(media_url):
++     raise ValueError("Invalid or private URL")
++ return safe_http_get(media_url)
+## Static Analysis Findings
+Clean. SSRF defense validates destination URL against private IP blacklists.""",
+    "pass",
+    "PR implements strict URL validation filtering private, loopback, and link-local IP addresses.",
+    "Static analysis verified active mitigation of Server-Side Request Forgery CVE-2023-46121.",
+    "Protects internal cloud metadata endpoints and microservices from unauthorized access.",
+    [],
+    None,
+    1.0
+)
+
+# 49. Scoped multi-tenant authorization check (CVE-2012-3540 patch)
+add_sample(
+    """## Pull Request Diff
++++ keystone/tenants.py
+- return db.user_update(user_id, {'tenant_id': target_tenant_id})
++ if not context.is_admin and context.tenant_id != target_tenant_id:
++     raise Unauthorized("Cannot switch to unauthorized tenant")
++ return db.user_update(user_id, {'tenant_id': target_tenant_id})
+## Static Analysis Findings
+Clean. Explicit authorization check enforces multi-tenant isolation boundaries.""",
+    "pass",
+    "PR checks tenant ownership before allowing user tenant assignment updates.",
+    "Static analyzer confirmed complete mitigation of access control flaw CVE-2012-3540.",
+    "Maintains multi-tenant isolation and prevents unauthorized lateral movement.",
+    [],
+    None,
+    1.0
+)
+
+# 50. Double-pass DOM sanitization (CVE-2020-6802 patch)
+add_sample(
+    """## Pull Request Diff
++++ sanitizer/html.py
+- return lxml.html.tostring(lxml.html.fromstring(html_string))
++ import bleach
++ return bleach.clean(html_string, tags=['b', 'i', 'p', 'a'])
+## Static Analysis Findings
+Clean. Robust HTML sanitization using Bleach with strict tag allowlist.""",
+    "pass",
+    "PR replaces naive HTML parsing with Bleach library using restricted tag allowlist.",
+    "Static security review confirmed resolution of mutation XSS vulnerability CVE-2020-6802.",
+    "Eliminates nested SVG and MathML script mutation vectors, ensuring secure DOM rendering.",
+    [],
+    None,
+    1.0
+)
+
+
 def generate_dataset(output_path: str = "services/api/app/ai/dataset.jsonl"):
     p = Path(output_path)
     p.parent.mkdir(parents=True, exist_ok=True)

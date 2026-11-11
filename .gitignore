@@ -42,3 +42,6 @@ codefort/
 models/**/checkpoint-*/
 *.pt
 *.pth
+
+# Raw downloaded dataset archives
+datasets/
