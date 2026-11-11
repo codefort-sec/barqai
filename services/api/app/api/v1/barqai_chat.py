@@ -412,17 +412,373 @@ def synthesize_deterministic_chat_response(
             f"}}"
         )
 
-    # 15. General Diagnostic Fallback (Intelligent Structure)
-    else:
+    # 15. Data Exfiltration / C2 Beaconing / Outbound Leaks
+    elif (
+        "exfiltration" in content_lower
+        or "data leak" in content_lower
+        or "beacon" in content_lower
+        or "c2" in content_lower
+        or "reverse shell" in content_lower
+        or "discord.com/api/webhooks" in content_lower
+        or "pastebin" in content_lower
+        or ("webhook" in content_lower and "token" in content_lower)
+        or ("transfer" in content_lower and "curl" in content_lower)
+    ):
         explanation = (
-            "### 🛡️ BARQAI Security Diagnostics & Code Hardening\n\n"
-            "**Diagnostic Assessment:**\n"
-            "Analyzed the provided inquiry and code context. To guarantee system resilience and defend against unhandled runtime errors:\n\n"
-            "1. **Defensive Input Validation:** Incoming parameters must be typed and bounded before processing.\n"
-            "2. **Resilient Error Envelopes:** Wrap operations in structured try/catch blocks with uniform error codes.\n"
-            "3. **Zero-Trust Boundary:** Never assume external inputs or network calls will succeed without timeouts and fallback handlers.\n\n"
-            "The hardened implementation below introduces defensive parameter checking, explicit error recovery, and typing."
+            "### 🚨 High-Priority Threat: Data Exfiltration & C2 Beaconing Channel\n\n"
+            "**Forensic Analysis:**\n"
+            "The application or build step initiates unauthorized outbound network connections to external endpoints, characteristic of command-and-control (C2) beaconing or automated secret exfiltration.\n\n"
+            "**Attack Mechanism (MITRE ATT&CK T1041 / T1071):**\n"
+            "1. **Environment Harvester:** Malicious payloads query `process.env` or local `~/.aws/credentials` / `~/.ssh/id_rsa` files.\n"
+            "2. **Encoding & Fragmentation:** Sensitive keys are base64-encoded or encrypted and appended as URL parameters or multipart POST payloads.\n"
+            "3. **Egress Channel:** Connections are dispatched to Discord webhooks, Telegram bots, Pastebin, or adversary-controlled bulletproof servers.\n\n"
+            "**Security Implication:** Complete compromise of cloud infrastructure access, database credentials, and developer signing keys.\n\n"
+            "**Remediation:** Enforce network egress allowlisting, sanitize outbound payloads, and prevent execution environments from accessing host secrets."
         )
+        rewritten = (
+            "// Egress Firewall and Data Sanitization Guard\n"
+            "export function sanitizeOutgoingPayload(data: Record<string, unknown>): Record<string, unknown> {\n"
+            "  const SENSITIVE_KEYS = ['token', 'secret', 'password', 'key', 'auth', 'cred'];\n"
+            "  const clean: Record<string, unknown> = {};\n\n"
+            "  for (const [key, val] of Object.entries(data)) {\n"
+            "    if (SENSITIVE_KEYS.some((s) => key.toLowerCase().includes(s))) {\n"
+            "      clean[key] = '[REDACTED_BY_CODEFORT]';\n"
+            "    } else {\n"
+            "      clean[key] = val;\n"
+            "    }\n"
+            "  }\n"
+            "  return clean;\n"
+            "}"
+        )
+
+    # 16. Suspicious Activity / Security Anomaly / Unauthorized Behavior
+    elif (
+        "suspicious activity" in content_lower
+        or "suspicious behavior" in content_lower
+        or "suspicious network" in content_lower
+        or "suspicious" in content_lower
+        or "anomaly" in content_lower
+        or "unauthorized" in content_lower
+        or "compromise" in content_lower
+        or "intrusion" in content_lower
+        or "backdoor" in content_lower
+        or "trojan" in content_lower
+    ):
+        explanation = (
+            "### 🚨 Threat Intelligence Alert: Suspicious Activity & Behavioral Anomaly Detected\n\n"
+            "**Forensic Incident Summary:**\n"
+            "A pattern matching unauthorized anomalous behavior, backdoor signatures, or suspicious environmental manipulation was flagged.\n\n"
+            "**Observed Anomaly Vectors:**\n"
+            "1. **Evasive Script Execution:** Unsigned child processes, shell spawns, or background tasks attempting to bypass standard build lifecycles.\n"
+            "2. **Anomalous Network Egress:** Outbound communication attempts to unrecognized external IP addresses, raw IP sockets, paste sites, or unauthenticated webhooks.\n"
+            "3. **Environment & Credential Tampering:** Attempts to inspect sensitive environment variables (`AWS_SECRET_ACCESS_KEY`, `NPM_TOKEN`, `GITHUB_TOKEN`) or alter filesystem permissions.\n"
+            "4. **Process Masquerading:** Background workers disguising network beacons under common system or utility process names.\n\n"
+            "**Security & Operational Impact:** High risk of remote persistence, credential exfiltration, or supply chain tampering before pull requests are merged.\n\n"
+            "**Incident Response & Containment Protocol:**\n"
+            "1. **Immediate Quarantine:** Halt running CI/CD runners and isolate affected containers.\n"
+            "2. **Credential Invalidation:** Revoke all API keys, deploy tokens, and service account secrets accessible in the environment.\n"
+            "3. **Static Audit:** Inspect all dependency lockfiles for newly introduced non-reproducible tarballs.\n"
+            "4. **Hardened Enforcement:** Apply the zero-trust containment wrapper below."
+        )
+        rewritten = (
+            "// Zero-Trust Process & Sandbox Containment Wrapper\n"
+            "import { execFile } from 'child_process';\n"
+            "import { promisify } from 'util';\n\n"
+            "const execFileAsync = promisify(execFile);\n\n"
+            "// Enforce strict domain allowlist for all outbound network calls\n"
+            "const TRUSTED_DOMAINS = new Set([\n"
+            "  'api.github.com',\n"
+            "  'registry.npmjs.org',\n"
+            "  'codefort.sec',\n"
+            "]);\n\n"
+            "export function assertNetworkAllowed(targetUrl: string): void {\n"
+            "  const parsed = new URL(targetUrl);\n"
+            "  if (!TRUSTED_DOMAINS.has(parsed.hostname)) {\n"
+            "    throw new Error(`SECURITY ALERT: Blocked unauthorized outbound egress to ${parsed.hostname}`);\n"
+            "  }\n"
+            "}\n\n"
+            "// Safe sandboxed command execution (blocks shell interpolation)\n"
+            "export async function executeContainedTask(binary: string, args: string[]): Promise<string> {\n"
+            "  const sanitizedArgs = args.filter((arg) => !/[;&|`$]/.test(arg));\n"
+            "  const { stdout } = await execFileAsync(binary, sanitizedArgs, {\n"
+            "    timeout: 5000,\n"
+            "    maxBuffer: 1024 * 512,\n"
+            "    env: { PATH: process.env.PATH, NODE_ENV: 'production' },\n"
+            "  });\n"
+            "  return stdout;\n"
+            "}"
+        )
+
+    # 17. Cryptocurrency Mining / Resource Hijacking
+    elif (
+        "miner" in content_lower
+        or "cryptominer" in content_lower
+        or "monero" in content_lower
+        or "xmrig" in content_lower
+        or "stratum" in content_lower
+        or "high cpu" in content_lower
+        or "coinhive" in content_lower
+    ):
+        explanation = (
+            "### 🚨 Resource Hijacking Alert: Cryptojacking / Miner Payload Detected\n\n"
+            "**Forensic Analysis:**\n"
+            "Detected signatures associated with unauthorized cryptocurrency mining (e.g., XMRig, Stratum TCP protocol, WebAssembly hash loops).\n\n"
+            "**Threat Impact (MITRE ATT&CK T1496):**\n"
+            "Attackers hijack compute resources in developer workstations or cloud CI/CD runners to mine Proof-of-Work cryptocurrencies, resulting in massive cloud billing surges, degraded build infrastructure, and denial of service.\n\n"
+            "**Remediation:** Block outbound Stratum ports (3333, 4444, 5555, 7777), kill rogue child processes, and configure strict container CPU limits."
+        )
+        rewritten = (
+            "// Cryptomining & High-CPU Worker Blocker\n"
+            "const BLOCKED_MINER_PORTS = new Set([3333, 4444, 5555, 7777, 9999]);\n"
+            "const BLOCKED_HOST_KEYWORDS = ['pool', 'hash', 'stratum', 'monero', 'xmr'];\n\n"
+            "export function validateWorkerTarget(host: string, port: number): void {\n"
+            "  if (BLOCKED_MINER_PORTS.has(port)) {\n"
+            "    throw new Error(`SECURITY ALERT: Blocked miner connection on port ${port}`);\n"
+            "  }\n"
+            "  if (BLOCKED_HOST_KEYWORDS.some((kw) => host.toLowerCase().includes(kw))) {\n"
+            "    throw new Error(`SECURITY ALERT: Blocked suspicious pool host ${host}`);\n"
+            "  }\n"
+            "}"
+        )
+
+    # 18. Plaintext Secret & Token Exposure (CWE-798)
+    elif (
+        "secret leak" in content_lower
+        or "token leak" in content_lower
+        or "api key exposed" in content_lower
+        or "hardcoded secret" in content_lower
+        or "credentials exposed" in content_lower
+        or "leaked key" in content_lower
+        or "private key" in content_lower
+        or "aws_secret_access_key" in content_lower
+        or "github_token" in content_lower
+    ):
+        explanation = (
+            "### 🚨 High-Severity Vulnerability: Plaintext Secret & Token Exposure (`CWE-798`)\n\n"
+            "**Root Cause:**\n"
+            "High-entropy API tokens, private signing keys, or cloud credentials are hardcoded directly into source files or configuration manifests.\n\n"
+            "**Threat Impact (MITRE ATT&CK T1552):**\n"
+            "Once committed, credentials persist in git commit histories and are indexed by public scrapers within seconds, allowing attackers to access cloud databases, deploy rogue infrastructure, or pivot into private corporate networks.\n\n"
+            "**Immediate Action Plan:**\n"
+            "1. **Rotate Immediately:** Invalidate the exposed secret in your provider dashboard (AWS, GitHub, Stripe, OpenAI).\n"
+            "2. **Purge Git History:** Use `git-filter-repo` or BFG Repo-Cleaner to permanently scrub historical commits.\n"
+            "3. **Environment Injection:** Load credentials dynamically via validated runtime environment variables or secure vault managers."
+        )
+        rewritten = (
+            "// Secure Environment Variable Configuration Loader (Zero Hardcoded Secrets)\n"
+            "export function getRequiredSecret(envKey: string): string {\n"
+            "  const val = process.env[envKey];\n"
+            "  if (!val || val.trim() === '') {\n"
+            "    throw new Error(`Configuration Error: Missing required environment variable: ${envKey}`);\n"
+            "  }\n"
+            "  return val.trim();\n"
+            "}"
+        )
+
+    # 19. HTTP 500 / Internal Server Error / Unhandled Exception
+    elif (
+        "500" in content_lower
+        or "internal server error" in content_lower
+        or "unhandled exception" in content_lower
+        or "server error" in content_lower
+        or "unhandledpromiserejection" in content_lower
+    ):
+        explanation = (
+            "### 🔍 Root Cause Analysis: HTTP 500 Internal Server Error & Unhandled Exception\n\n"
+            "**Forensic Failure State:**\n"
+            "The backend web service encountered an unexpected condition that prevented it from fulfilling the request. Unlike 4xx client errors, an HTTP 500 indicates an unhandled server-side crash or uncaught rejection.\n\n"
+            "**Primary Root Causes:**\n"
+            "1. **Uncaught Asynchronous Rejections:** An async function threw an error without an enclosing try/catch, triggering an `UnhandledPromiseRejection` that terminates the process or returns an empty 500.\n"
+            "2. **Database or Upstream Service Failure:** The database connection pool timed out, an invalid query was executed, or a downstream microservice was unreachable.\n"
+            "3. **Missing Environment Variables:** A mandatory configuration variable (`DATABASE_URL`, `SECRET_KEY`) was undefined at runtime.\n"
+            "4. **Type / Null Pointer Dereference:** Accessing attributes on `undefined` inside server-side controllers.\n\n"
+            "**Remediation:** Implement a global exception filter, wrap async routes in error envelopes, and provide graceful fallback degradation."
+        )
+        rewritten = (
+            "// Resilient Global Error Middleware with Unified Envelope\n"
+            "import { Request, Response, NextFunction } from 'express';\n\n"
+            "export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {\n"
+            "  const statusCode = err.status || err.statusCode || 500;\n"
+            "  const isProd = process.env.NODE_ENV === 'production';\n\n"
+            "  console.error(`[ERROR 500] ${req.method} ${req.url}:`, err.stack || err);\n\n"
+            "  res.status(statusCode).json({\n"
+            "    success: false,\n"
+            "    error: {\n"
+            "      code: err.code || 'INTERNAL_SERVER_ERROR',\n"
+            "      message: isProd && statusCode === 500 ? 'An unexpected server error occurred.' : err.message,\n"
+            "      timestamp: new Date().toISOString(),\n"
+            "    },\n"
+            "  });\n"
+            "}"
+        )
+
+    # 20. HTTP 401 / 403 / JWT Expiration / Auth Failures
+    elif (
+        "401" in content_lower
+        or "403" in content_lower
+        or "unauthorized" in content_lower
+        or "forbidden" in content_lower
+        or "jwt" in content_lower
+        or "token expired" in content_lower
+        or "invalid token" in content_lower
+        or "access denied" in content_lower
+        or "permission denied" in content_lower
+    ):
+        explanation = (
+            "### 🔍 Root Cause Analysis: HTTP 401 Unauthorized & 403 Forbidden\n\n"
+            "**Forensic Auth Breakdown:**\n"
+            "The request failed authentication (401) or authorization (403):\n\n"
+            "1. **HTTP 401 (Unauthenticated):** The client either failed to provide an `Authorization: Bearer <token>` header, or the provided JWT token is malformed, expired (`exp` claim exceeded), or signature validation failed against the secret/public key.\n"
+            "2. **HTTP 403 (Unauthorized / Forbidden):** The user's identity is authenticated, but their assigned roles/permissions do not permit access to the requested resource.\n\n"
+            "**Key Debugging Checklist:**\n"
+            "1. **Clock Skew:** Verify server system clocks match NTP to avoid premature token expiration.\n"
+            "2. **Bearer Prefix:** Ensure the client sends `Bearer <token>` with a single space.\n"
+            "3. **Secret Mismatch:** Check that JWT signing and verification share the identical symmetric secret or RSA public/private pair."
+        )
+        rewritten = (
+            "// Secure JWT Authentication & Role Authorization Middleware\n"
+            "import { Request, Response, NextFunction } from 'express';\n"
+            "import jwt from 'jsonwebtoken';\n\n"
+            "const JWT_SECRET = process.env.JWT_SECRET || 'secure-signing-secret';\n\n"
+            "export function requireAuth(req: Request, res: Response, next: NextFunction) {\n"
+            "  const authHeader = req.headers.authorization;\n"
+            "  if (!authHeader || !authHeader.startsWith('Bearer ')) {\n"
+            "    return res.status(401).json({ error: 'Missing or malformed Authorization header.' });\n"
+            "  }\n\n"
+            "  const token = authHeader.split(' ')[1];\n"
+            "  try {\n"
+            "    const decoded = jwt.verify(token, JWT_SECRET, { clockTolerance: 30 });\n"
+            "    (req as any).user = decoded;\n"
+            "    next();\n"
+            "  } catch (err: any) {\n"
+            "    if (err.name === 'TokenExpiredError') {\n"
+            "      return res.status(401).json({ error: 'Token expired. Please refresh session.', code: 'TOKEN_EXPIRED' });\n"
+            "    }\n"
+            "    return res.status(401).json({ error: 'Invalid token signature.', code: 'INVALID_TOKEN' });\n"
+            "  }\n"
+            "}"
+        )
+
+    # 21. HTTP 429 Too Many Requests & Rate Limiting
+    elif (
+        "429" in content_lower
+        or "too many requests" in content_lower
+        or "rate limit" in content_lower
+        or "throttled" in content_lower
+        or "quota exceeded" in content_lower
+    ):
+        explanation = (
+            "### 🔍 Root Cause Analysis: HTTP 429 (Rate Limit Exceeded)\n\n"
+            "**Forensic Throttling Analysis:**\n"
+            "The client sent too many requests in a given amount of time, exceeding the server's rate-limiting threshold (e.g. 60 requests per minute).\n\n"
+            "**Root Causes:**\n"
+            "1. **Rapid Polling in UI:** React `useEffect` dependency loops or unthrottled search inputs firing on every keystroke.\n"
+            "2. **Missing Distributed Cache:** In multi-instance deployments, uncoordinated in-memory rate limiters cause unpredictable throttling.\n"
+            "3. **API Consumer Quota:** Upstream third-party API limits (OpenAI, GitHub API, Cloudflare) exceeded.\n\n"
+            "**Remediation:** Implement exponential backoff with jitter on the client, and deploy Redis sliding-window token bucket rate limiters with `Retry-After` headers on the server."
+        )
+        rewritten = (
+            "// Client-Side Exponential Backoff & Jitter Handler for HTTP 429\n"
+            "export async function fetchWithBackoff(url: string, options: RequestInit = {}, maxRetries = 3): Promise<Response> {\n"
+            "  let attempt = 0;\n"
+            "  while (attempt < maxRetries) {\n"
+            "    const res = await fetch(url, options);\n"
+            "    if (res.status === 429) {\n"
+            "      const retryAfterSec = Number(res.headers.get('Retry-After')) || Math.pow(2, attempt);\n"
+            "      const jitter = Math.random() * 500;\n"
+            "      await new Promise((resolve) => setTimeout(resolve, retryAfterSec * 1000 + jitter));\n"
+            "      attempt++;\n"
+            "      continue;\n"
+            "    }\n"
+            "    return res;\n"
+            "  }\n"
+            "  throw new Error('Rate limit exceeded: Max retries exhausted');\n"
+            "}"
+        )
+
+    # 22. Server-Side Request Forgery (SSRF - CWE-918)
+    elif (
+        "ssrf" in content_lower
+        or "server-side request forgery" in content_lower
+        or "cwe-918" in content_lower
+        or "169.254" in content_lower
+        or "metadata service" in content_lower
+    ):
+        explanation = (
+            "### 🛡️ Vulnerability Identified: Server-Side Request Forgery (SSRF - `CWE-918`)\n\n"
+            "**Vulnerability Breakdown:**\n"
+            "The application accepts a user-controlled URL and fetches it using a server-side HTTP client without validating the destination IP address.\n\n"
+            "**Attack Mechanism:**\n"
+            "Attackers provide URLs pointing to internal loopback addresses (`http://127.0.0.1:8000`, `http://localhost:5432`) or cloud metadata endpoints (`http://169.254.169.254/latest/meta-data/`) to steal cloud IAM credentials, read internal metrics, or pivot into private microservices.\n\n"
+            "**Remediation:** Validate URLs against an allowlist, resolve DNS before fetching, and explicitly block private IP ranges (RFC 1918: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, and link-local 169.254.0.0/16)."
+        )
+        rewritten = (
+            "// SSRF Protection: Private Subnet and Metadata Endpoint Filter\n"
+            "import dns from 'dns/promises';\n\n"
+            "export async function assertSafeRemoteUrl(targetUrl: string): Promise<void> {\n"
+            "  const parsed = new URL(targetUrl);\n"
+            "  if (parsed.protocol !== 'https:') {\n"
+            "    throw new Error('Only HTTPS protocol allowed.');\n"
+            "  }\n\n"
+            "  const { address } = await dns.lookup(parsed.hostname);\n"
+            "  const isPrivate =\n"
+            "    address.startsWith('10.') ||\n"
+            "    address.startsWith('192.168.') ||\n"
+            "    address.startsWith('127.') ||\n"
+            "    address.startsWith('169.254.') ||\n"
+            "    /^172\\.(1[6-9]|2[0-9]|3[0-1])\\./.test(address);\n\n"
+            "  if (isPrivate) {\n"
+            "    throw new Error(`SECURITY ALERT: SSRF attempt blocked for private IP ${address}`);\n"
+            "  }\n"
+            "}"
+        )
+
+    # 23. Intelligent Dynamic Threat & Error Diagnostic Fallback
+    else:
+        is_suspicious = any(
+            w in content_lower
+            for w in ["suspect", "malicious", "attack", "leak", "inject", "hack", "breach", "threat"]
+        )
+        is_error = any(
+            w in content_lower
+            for w in ["error", "fail", "exception", "crash", "bug", "trace", "reject"]
+        )
+
+        if is_suspicious:
+            explanation = (
+                "### 🚨 Forensic Incident Analysis: Suspicious Activity Identified\n\n"
+                "**Diagnostic Assessment:**\n"
+                f"Analyzed the security event and codebase context in `{target_file}`. The activity exhibits anomalous signals that deviate from safe development baselines.\n\n"
+                "**Forensic Threat Indicators:**\n"
+                "1. **Unvetted External Dependency / Payload:** Code contains untrusted execution hooks or unverified external references.\n"
+                "2. **Privilege Boundary Traversal:** Access patterns indicate potential escalation of privileges beyond least-privilege boundaries.\n"
+                "3. **Data Exfiltration Risk:** Outbound data channels lack strict domain allowlisting and payload sanitization.\n\n"
+                "**Containment & Remediation:**\n"
+                "Quarantine suspicious routines, assert strict environment variables, and apply the zero-trust hardened defense below."
+            )
+        elif is_error:
+            explanation = (
+                "### 🔍 Deep Runtime Error Diagnosis & Forensic Root Cause Analysis\n\n"
+                "**Diagnostic Assessment:**\n"
+                f"An execution fault was identified in `{target_file}`. The runtime encountered an unhandled exception state.\n\n"
+                "**Root Cause Breakdown:**\n"
+                "1. **State Dereferencing Trap:** Accessing properties on asynchronously loaded or uninitialized state structures.\n"
+                "2. **Unhandled Boundary Conditions:** The control flow lacks an enclosing defensive fallback envelope, bubbling raw errors to callers.\n"
+                "3. **Environment or Type Inconsistency:** Runtime input types violate schema expectations, causing unhandled type promotion failures.\n\n"
+                "**Remediation Action Plan:**\n"
+                "Introduce strict typing, optional chaining, bounded input validation, and graceful self-healing error recovery."
+            )
+        else:
+            explanation = (
+                "### 🛡️ BARQAI Security Intelligence & Code Quality Assessment\n\n"
+                "**Diagnostic Assessment:**\n"
+                f"Reviewed code structure and architecture for `{target_file}`.\n\n"
+                "**Key Findings & Recommendations:**\n"
+                "1. **Defensive Input Validation:** Incoming parameters must be strictly typed and validated before reaching business logic.\n"
+                "2. **Resilient Error Envelopes:** Wrap operations in structured try/catch blocks with uniform error codes.\n"
+                "3. **Zero-Trust Boundary:** Never assume external network calls or storage operations succeed without timeouts and fallback handlers.\n\n"
+                "The hardened implementation below introduces defensive parameter checking, explicit error recovery, and typing."
+            )
         rewritten = (
             f"// Hardened, resilient implementation for {target_file}\n"
             "export async function executeSafeOperation<T>(operation: () => Promise<T>): Promise<{ success: boolean; data?: T; error?: string }> {\n"

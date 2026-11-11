@@ -62,23 +62,31 @@ export async function POST(req: NextRequest) {
           try {
             const cleanJson = rawContent.replace(/```json|```/g, "").trim();
             const parsed = JSON.parse(cleanJson);
+            const explanationText =
+              parsed.explanation ||
+              (parsed.reply && parsed.reply !== parsed.rewritten_code ? parsed.reply : null) ||
+              rawContent.split("```")[0].trim() ||
+              rawContent;
+
             return NextResponse.json({
               reply: parsed.reply || rawContent,
-              explanation: parsed.explanation || "Analyzed by BARQAI Frontier Qwen MoE.",
+              explanation: explanationText,
               rewritten_code: parsed.rewritten_code || body.code_snippet,
               original_code: body.code_snippet || "",
               diff: parsed.diff || undefined,
               model: "Qwen 2.5 Coder 32B Instruct (MoE)",
-              suggested_actions: ["Explain root cause in depth", "Show unified git diff"],
+              suggested_actions: ["Explain root cause in depth", "Show unified git diff", "Investigate suspicious threat vectors"],
             });
           } catch {
+            const codeMatch = rawContent.match(/```(?:\w+)?\n([\s\S]*?)```/);
+            const explanationText = rawContent.split("```")[0].trim() || rawContent;
             return NextResponse.json({
               reply: rawContent,
-              explanation: "Analyzed by BARQAI Frontier Qwen MoE.",
-              rewritten_code: body.code_snippet,
+              explanation: explanationText,
+              rewritten_code: codeMatch ? codeMatch[1].trim() : body.code_snippet,
               original_code: body.code_snippet || "",
               model: "Qwen 2.5 Coder 32B Instruct (MoE)",
-              suggested_actions: ["Explain root cause in depth", "Show unified git diff"],
+              suggested_actions: ["Explain root cause in depth", "Show unified git diff", "Investigate suspicious threat vectors"],
             });
           }
         }
