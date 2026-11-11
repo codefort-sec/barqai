@@ -29,13 +29,16 @@ logger = logging.getLogger("codefort.barqai_chat")
 router = APIRouter(tags=["BARQAI Chat & Code Rewriter"])
 
 BARQAI_CHAT_SYSTEM_PROMPT = """You are BARQAI, the AI cybersecurity intelligence and code remediation copilot of CODEFORT.
-Your responsibility is to assist developers in diagnosing errors, security vulnerabilities, and code defects.
+Your responsibility is to assist developers with cybersecurity, GitHub repository hardening, pull request security, diagnosing errors, and remediating vulnerabilities.
 
-When a developer provides an error, stack trace, or code snippet:
-1. EXPLAIN what went wrong, the root cause, and the security or runtime impact in clear, direct, and thorough language.
-2. REWRITE the code to completely fix the problem, eliminate vulnerabilities, and ensure functional correctness.
-3. Return the rewritten code in a fenced markdown code block with the appropriate language tag.
-4. Prescribe verification steps and potential edge cases.
+1. When greeted (e.g. 'hi', 'hello') or asked general questions about software projects, GitHub repositories, or pull requests:
+   - Provide an articulate, friendly, and authoritative answer explaining concepts, best practices, and security principles.
+   - Do NOT force a code rewrite when no code or defect was provided.
+
+2. When a developer provides an error, stack trace, or code snippet:
+   - EXPLAIN what went wrong, the root cause, and the security or runtime impact in clear, direct, and thorough language.
+   - REWRITE the code in a fenced code block to completely fix the problem, eliminate vulnerabilities, and ensure functional correctness.
+   - Prescribe verification steps and potential edge cases.
 
 Always maintain a professional, helpful cyber-defense tone.
 """
@@ -67,12 +70,178 @@ def synthesize_deterministic_chat_response(
 ) -> Dict[str, Any]:
     """
     Comprehensive, zero-downtime forensic analysis and remediation engine.
-    Diagnoses root causes with deep technical explanations, impacts, and functional rewritten code.
+    Diagnoses root causes with deep technical explanations, impacts, and functional rewritten code,
+    while naturally answering greetings, GitHub, repository, and pull request inquiries.
     """
     target_file = file_path or "package.json"
     content = f"{code_snippet or ''}\n{error_context or ''}\n{message}"
     content_lower = content.lower()
+    raw_msg = (message or "").strip()
+    msg_lower = raw_msg.lower()
     original = code_snippet or error_context or message
+
+    has_code_snippet = bool(code_snippet and code_snippet.strip())
+    has_error_context = bool(error_context and error_context.strip())
+
+    # A. CONVERSATIONAL & GITHUB / PROJECT WORKFLOW QUERIES (No code rewrite required)
+    if not has_code_snippet and not has_error_context:
+        # 1. Greetings & Intro
+        if (
+            re.match(r"^(hi|hello|hey|yo|sup|howdy|greetings|good\s*(morning|afternoon|evening))\b", msg_lower)
+            or msg_lower in ("hi", "hello", "help")
+            or "who are you" in msg_lower
+            or "what are you" in msg_lower
+            or "what can you do" in msg_lower
+            or "how can you help" in msg_lower
+        ):
+            explanation = (
+                "### 👋 Welcome to BARQAI Intelligence\n\n"
+                "I am **BARQAI**, your autonomous AI cybersecurity copilot and engineering assistant for **CODEFORT**.\n\n"
+                "**How I Can Assist You:**\n"
+                "- 🛡️ **GitHub Pull Request Protection:** Detect supply chain droppers, typosquatted packages, and workflow injection vulnerabilities directly in your PRs.\n"
+                "- 📁 **Repository & Branch Hardening:** Guidance on configuring branch protection, `CODEOWNERS`, secret scanning, and zero-trust Git workflows.\n"
+                "- 🔍 **Root Cause Forensics:** Paste any error message, stack trace, or runtime defect (HTTP 404, CORS, 500, TypeError) to get an in-depth forensic diagnosis.\n"
+                "- 🛠️ **Production-Hardened Code Rewrites:** Receive clean, verified fixes and unified git diffs ready to apply to your repository.\n"
+                "- 💬 **Project & Architecture Advice:** Ask questions about web security, CI/CD pipelines, Docker sandboxing, or Git best practices.\n\n"
+                "Feel free to ask a question, describe your repository setup, or paste an error/code snippet below!"
+            )
+            return {
+                "reply": explanation,
+                "explanation": explanation,
+                "rewritten_code": None,
+                "original_code": None,
+                "diff": None,
+                "model": "Qwen 2.5 Coder 32B Instruct (MoE)",
+                "suggested_actions": [
+                    "How do pull requests get protected by CODEFORT?",
+                    "What are GitHub branch protection rules?",
+                    "How do I prevent secrets from leaking into Git?",
+                    "Explain supply chain attacks in npm",
+                ],
+            }
+
+        # 2. Pull Request (PR) Inquiries
+        if not any(w in msg_lower for w in ["fix", "vulnerability", "exploit", "cwe", "pwnrequest", "injection", "rce", "target_run", "error", "bug"]) and any(
+            kw in msg_lower
+            for kw in [
+                "pull request", "pr ", " prs", "pr?", "pr review",
+                "merge request", "checks api", "pr security", "how to review pr",
+                "how do prs work", "how do pull requests work"
+            ]
+        ):
+            explanation = (
+                "### 🔀 GitHub Pull Requests & Security Review Architecture\n\n"
+                "A **Pull Request (PR)** is a collaboration mechanism on GitHub that allows developers to propose changes from a feature branch or fork and have them reviewed, tested, and audited before merging into the main codebase.\n\n"
+                "**Key Phases of the PR Lifecycle:**\n"
+                "1. **Branching & Diff Generation:** Changes are committed to an isolated branch and opened as a PR against target branches like `main` or `production`.\n"
+                "2. **Automated Status Checks (CI/CD):** GitHub Actions and security tools run test suites, linting, and vulnerability analysis.\n"
+                "3. **Peer & Security Review:** Team members and automated bots inspect the unified diff for code quality, architectural fit, and security flaws.\n"
+                "4. **Merge & Deployment:** Once all status checks pass and approvals are granted, the PR is merged (via merge commit, squash, or rebase).\n\n"
+                "**Critical Security Threats in Pull Requests:**\n"
+                "- 🚨 **Malicious Dependency Injection:** Sneaking compromised packages or typosquats into `package.json` or `requirements.txt`.\n"
+                "- 🚨 **PwnRequest / Workflow Escalation:** Malicious PRs exploiting `pull_request_target` workflows to execute arbitrary code with repository write permissions and access to secrets.\n"
+                "- 🚨 **Accidental Secret Commits:** Developers inadvertently committing `.env` tokens, AWS keys, or database credentials.\n\n"
+                "**How CODEFORT Protects Your Pull Requests:**\n"
+                "- **PR Security Badges:** Injects live status indicators (`PASS`, `REVIEW`, `BLOCK`) directly into the GitHub PR conversation page.\n"
+                "- **Inline Code Warnings:** Annotates flagged lines in the 'Files Changed' tab with forensic explanations.\n"
+                "- **BARQAI Side Panel:** Provides instant risk scoring (0-100), telemetry evidence, and 1-click clean patches to unblock developers safely."
+            )
+            return {
+                "reply": explanation,
+                "explanation": explanation,
+                "rewritten_code": None,
+                "original_code": None,
+                "diff": None,
+                "model": "Qwen 2.5 Coder 32B Instruct (MoE)",
+                "suggested_actions": [
+                    "Explain GitHub Actions pull_request_target risk",
+                    "How do I install the CODEFORT Guard extension?",
+                    "How do PR status checks work?",
+                    "What is branch protection and why is it needed?",
+                ],
+            }
+
+        # 3. GitHub & Repository Inquiries
+        if not any(w in msg_lower for w in ["fix", "vulnerability", "exploit", "cwe", "error", "bug", "leak", "secret", "exposed"]) and any(
+            kw in msg_lower
+            for kw in [
+                "github", "repository", "repo", "branch protection",
+                "codeowners", "secret scanning", "gitignore", "git commit",
+                "git merge", "git fork", "how to secure repo"
+            ]
+        ):
+            explanation = (
+                "### 📁 GitHub Repository Architecture & Security Best Practices\n\n"
+                "A **GitHub Repository** contains all of your project's files, commit histories, branches, and revision metadata managed by Git. Securing your repository is the first line of defense in modern software supply chains.\n\n"
+                "**Essential Repository Security Checklist:**\n"
+                "1. **Enforce Branch Protection on `main` / `master`:**\n"
+                "   - Require a pull request before merging (disallow direct pushes).\n"
+                "   - Require at least 1 or 2 peer review approvals.\n"
+                "   - Require status checks (tests, CODEFORT security scan) to pass before merging.\n"
+                "   - Enforce branch protections for administrators.\n"
+                "2. **Implement `CODEOWNERS`:**\n"
+                "   - Place a `CODEOWNERS` file in `.github/CODEOWNERS` to automatically require domain-expert review on critical files (`.github/workflows/`, `security/`, `db/migrations/`).\n"
+                "3. **Enable GitHub Secret Scanning & Push Protection:**\n"
+                "   - Automatically blocks pushes that contain high-entropy API keys (OpenAI, AWS, GitHub personal access tokens).\n"
+                "4. **Dependabot & Software Bill of Materials (SBOM):**\n"
+                "   - Enable automated dependency security alerts and keep dependency lockfiles (`package-lock.json`, `poetry.lock`) strictly committed.\n"
+                "5. **Signed Commits:**\n"
+                "   - Require GPG or SSH signature verification to guarantee that commits originate from verified contributors."
+            )
+            return {
+                "reply": explanation,
+                "explanation": explanation,
+                "rewritten_code": None,
+                "original_code": None,
+                "diff": None,
+                "model": "Qwen 2.5 Coder 32B Instruct (MoE)",
+                "suggested_actions": [
+                    "How do I set up a CODEOWNERS file?",
+                    "How do I configure branch protection rules?",
+                    "How does Git secret scanning work?",
+                    "Explain difference between Git fork and branch",
+                ],
+            }
+
+        # 4. CODEFORT Platform & Extension Inquiries
+        if not any(w in msg_lower for w in ["fix", "error", "bug", "trace"]) and any(
+            kw in msg_lower
+            for kw in [
+                "codefort", "codefort guard", "extension", "chrome extension",
+                "firefox", "pairing code", "pairing", "dashboard", "forensic room"
+            ]
+        ):
+            explanation = (
+                "### 🛡️ CODEFORT: Architecture & Feature Overview\n\n"
+                "**CODEFORT** is an enterprise cyber-defense platform designed to detect, diagnose, and remediate supply chain attacks, zero-day vulnerabilities, and pipeline exploits before pull requests are merged.\n\n"
+                "**Core Platform Components:**\n"
+                "1. **CODEFORT Guard (Chrome & Firefox Extension):**\n"
+                "   - Integrates directly into GitHub PR pages without requiring you to switch tabs.\n"
+                "   - Displays real-time **PR Security Badges** (`PASS`, `REVIEW`, `BLOCK`).\n"
+                "   - Highlights risky code lines with inline warnings.\n"
+                "   - Features the **BARQAI Side Panel** with risk scoring, vulnerability explanations, and 1-click clean patches.\n"
+                "2. **Interactive Forensic Studio (Web Dashboard):**\n"
+                "   - Explore detailed AST analysis, typosquatting intelligence, and workflow security graphs.\n"
+                "   - Full telemetry evidence with cross-engine risk scoring.\n"
+                "3. **BARQAI Remediation Engine:**\n"
+                "   - Powered by frontier Qwen MoE reasoning to explain root causes and synthesize verified, non-breaking remediation patches.\n"
+                "4. **Secure Extension Pairing:**\n"
+                "   - Connect the extension in 5 seconds using a short-lived single-use pairing code generated from your web dashboard."
+            )
+            return {
+                "reply": explanation,
+                "explanation": explanation,
+                "rewritten_code": None,
+                "original_code": None,
+                "diff": None,
+                "model": "Qwen 2.5 Coder 32B Instruct (MoE)",
+                "suggested_actions": [
+                    "How do I install CODEFORT Guard extension?",
+                    "How does the pairing code work?",
+                    "Show me an example pull request scan",
+                    "What security engines are included?",
+                ],
+            }
 
     suggested_actions = [
         "Explain root cause in depth",
@@ -735,6 +904,45 @@ def synthesize_deterministic_chat_response(
 
     # 23. Intelligent Dynamic Threat & Error Diagnostic Fallback
     else:
+        is_explicit_code_task = (
+            has_code_snippet
+            or has_error_context
+            or any(
+                w in content_lower
+                for w in [
+                    "fix", "rewrite", "refactor", "error", "bug", "trace", "stack", "exception",
+                    "failed", "crash", "syntaxerror", "typeerror", "overflow", "vulnerability",
+                    "exploit", "cwe-", "fail", "patch", "leak", "remediation", "line "
+                ]
+            )
+        )
+
+        if not is_explicit_code_task:
+            explanation = (
+                "### 💡 BARQAI Software & Cyber-Defense Guidance\n\n"
+                f"**Inquiry Assessment:**\n"
+                f"Regarding your inquiry: *\"{raw_msg}\"*\n\n"
+                "**Key Engineering & Security Principles:**\n"
+                "1. **Zero-Trust Baseline:** Assume potential compromise across external inputs, third-party packages, and untrusted network endpoints.\n"
+                "2. **Continuous Verification:** Integrate automated static analysis, security linters, and pull-request gating into your daily Git workflow.\n"
+                "3. **Minimal Privilege Scope:** Restrict tokens, permissions, and environment variables to the exact boundary needed for execution.\n\n"
+                "To analyze a specific error or vulnerability in your repository, paste your error message, terminal stack trace, or code snippet into the inputs on the left!"
+            )
+            return {
+                "reply": explanation,
+                "explanation": explanation,
+                "rewritten_code": None,
+                "original_code": None,
+                "diff": None,
+                "model": "Qwen 2.5 Coder 32B Instruct (MoE)",
+                "suggested_actions": [
+                    "Explain how pull requests work",
+                    "How to secure a GitHub repository",
+                    "Diagnose an HTTP 500 error",
+                    "Fix typosquatted lodashe dependency",
+                ],
+            }
+
         is_suspicious = any(
             w in content_lower
             for w in ["suspect", "malicious", "attack", "leak", "inject", "hack", "breach", "threat"]
@@ -873,19 +1081,23 @@ async def call_llm_for_chat(
                 data = res.json()
                 assistant_content = data["choices"][0]["message"]["content"]
 
-                code_match = re.search(r"```(?:\w+)?\n([\s\S]*?)```", assistant_content)
+                has_code = bool(code_snippet or error_context)
+                code_match = re.search(r"```(?:\w+)?\n([\s\S]*?)```", assistant_content) if has_code else None
                 rewritten_code = code_match.group(1).strip() if code_match else None
-                original = code_snippet or error_context or ""
-                diff = generate_unified_diff(original, rewritten_code, file_path or "code.ts") if rewritten_code else None
+                diff = generate_unified_diff(code_snippet or "", rewritten_code, file_path or "code.ts") if (rewritten_code and code_snippet) else None
 
                 return {
                     "reply": assistant_content,
-                    "explanation": assistant_content.split("```")[0].strip(),
-                    "rewritten_code": rewritten_code or original,
-                    "original_code": original,
+                    "explanation": assistant_content.split("```")[0].strip() if code_match else assistant_content,
+                    "rewritten_code": rewritten_code,
+                    "original_code": code_snippet if rewritten_code else None,
                     "diff": diff,
                     "model": settings.OPENROUTER_MODEL,
                     "suggested_actions": [
+                        "How do pull requests get protected by CODEFORT?",
+                        "What are GitHub branch protection rules?",
+                        "How do I prevent secrets from leaking into Git?",
+                    ] if not rewritten_code else [
                         "Explain root cause in depth",
                         "Show unified git diff",
                         "Generate automated test suite",

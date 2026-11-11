@@ -187,3 +187,43 @@ async def test_13_chat_explains_secret_leak(client: AsyncClient):
     data = res.json()
     assert "Secret" in data["explanation"] or "Token" in data["explanation"] or "CWE-798" in data["explanation"]
     assert "getRequiredSecret" in data["rewritten_code"] or "process.env" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_14_chat_replies_to_greetings_without_forced_code_rewrite(client: AsyncClient):
+    payload = {
+        "message": "hi",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["rewritten_code"] is None
+    assert data["diff"] is None
+    assert "BARQAI" in data["explanation"]
+    assert len(data["suggested_actions"]) >= 2
+
+
+@pytest.mark.asyncio
+async def test_15_chat_answers_pull_request_questions(client: AsyncClient):
+    payload = {
+        "message": "How do pull requests work on GitHub and how does CODEFORT protect them?",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["rewritten_code"] is None
+    assert "Pull Request" in data["explanation"] or "PR" in data["explanation"]
+    assert len(data["suggested_actions"]) >= 2
+
+
+@pytest.mark.asyncio
+async def test_16_chat_answers_github_repository_hardening_questions(client: AsyncClient):
+    payload = {
+        "message": "What are GitHub branch protection rules and how do I secure my repository?",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["rewritten_code"] is None
+    assert "Branch Protection" in data["explanation"] or "Repository" in data["explanation"]
+    assert len(data["suggested_actions"]) >= 2

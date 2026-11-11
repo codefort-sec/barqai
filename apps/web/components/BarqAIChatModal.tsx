@@ -236,12 +236,13 @@ export const BarqAIChatModal: React.FC<BarqAIChatModalProps> = ({
     {
       id: "welcome",
       role: "assistant",
-      text: "👋 I am **BARQAI**, your cyber-defense intelligence and code remediation copilot. Paste any error, stack trace, or vulnerable code snippet, and I will explain the root cause and rewrite it into clean, secure code.",
+      text: "👋 I am **BARQAI**, your cyber-defense intelligence and engineering assistant for **CODEFORT**. Ask me anything about your software projects, GitHub repositories, pull requests, CI/CD security, or paste an error message / code snippet to get a forensic diagnosis and secure rewrite.",
       timestamp: "Just now",
       suggestedActions: [
+        "Hi BARQAI! What can you help me with?",
+        "How do pull requests get protected by CODEFORT?",
+        "How do I configure branch protection on GitHub?",
         "Why is npm preinstall with curl dangerous?",
-        "Rewrite package.json with lodashe typosquat",
-        "Explain GitHub Actions pull_request_target risk",
       ],
     },
   ]);
@@ -557,7 +558,7 @@ export const BarqAIChatModal: React.FC<BarqAIChatModalProps> = ({
                           <div className="flex items-center justify-between text-[10px] bg-bg border border-border/80 px-2.5 py-1.5 text-text-dim font-mono">
                             <span className="flex items-center gap-1.5 text-lime font-bold">
                               <span className="inline-block w-2 h-2 rounded-full bg-lime animate-pulse" />
-                              BARQAI FORENSIC DIAGNOSTICS & EXPLANATION
+                              {msg.rewrittenCode ? "BARQAI FORENSIC DIAGNOSTICS & EXPLANATION" : "BARQAI INTELLIGENCE & COPILOT"}
                             </span>
                             <span>Engine: {msg.model || "Qwen MoE Intelligence"}</span>
                           </div>
@@ -669,7 +670,7 @@ export const BarqAIChatModal: React.FC<BarqAIChatModalProps> = ({
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Ask BARQAI to explain an error, vulnerability, or rewrite a snippet..."
+              placeholder="Ask anything about GitHub, pull requests, project architecture, or paste an error to fix..."
               disabled={loading}
               className="flex-1 bg-bg border border-border px-3 py-2 text-xs text-text placeholder:text-text-dim focus:outline-none focus:border-lime"
             />

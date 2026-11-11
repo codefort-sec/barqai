@@ -70,6 +70,189 @@ export function synthesizeBarqAIChatResponse(req: BarqAIChatRequest): BarqAIChat
   const content = `${req.code_snippet || ""}\n${req.error_context || ""}\n${req.message}`.toLowerCase();
   const original = req.code_snippet || req.error_context || req.message;
 
+  const rawMsg = (req.message || "").trim();
+  const msgLower = rawMsg.toLowerCase();
+  const hasCodeSnippet = Boolean(req.code_snippet && req.code_snippet.trim());
+  const hasErrorContext = Boolean(req.error_context && req.error_context.trim());
+
+  // A. CONVERSATIONAL & GITHUB / PROJECT WORKFLOW QUERIES (No code rewrite required)
+  if (!hasCodeSnippet && !hasErrorContext) {
+    // 1. Greetings & Intro
+    if (
+      /^(hi|hello|hey|yo|sup|howdy|greetings|good\s*(morning|afternoon|evening))\b/i.test(msgLower) ||
+      msgLower === "hi" ||
+      msgLower === "hello" ||
+      msgLower.includes("who are you") ||
+      msgLower.includes("what are you") ||
+      msgLower.includes("what can you do") ||
+      msgLower.includes("how can you help") ||
+      msgLower === "help"
+    ) {
+      const explanation =
+        "### 👋 Welcome to BARQAI Intelligence\n\n" +
+        "I am **BARQAI**, your autonomous AI cybersecurity copilot and engineering assistant for **CODEFORT**.\n\n" +
+        "**How I Can Assist You:**\n" +
+        "- 🛡️ **GitHub Pull Request Protection:** Detect supply chain droppers, typosquatted packages, and workflow injection vulnerabilities directly in your PRs.\n" +
+        "- 📁 **Repository & Branch Hardening:** Guidance on configuring branch protection, `CODEOWNERS`, secret scanning, and zero-trust Git workflows.\n" +
+        "- 🔍 **Root Cause Forensics:** Paste any error message, stack trace, or runtime defect (HTTP 404, CORS, 500, TypeError) to get an in-depth forensic diagnosis.\n" +
+        "- 🛠️ **Production-Hardened Code Rewrites:** Receive clean, verified fixes and unified git diffs ready to apply to your repository.\n" +
+        "- 💬 **Project & Architecture Advice:** Ask questions about web security, CI/CD pipelines, Docker sandboxing, or Git best practices.\n\n" +
+        "Feel free to ask a question, describe your repository setup, or paste an error/code snippet below!";
+
+      return {
+        reply: explanation,
+        explanation,
+        model: "Qwen 2.5 Coder 32B Instruct (MoE)",
+        suggested_actions: [
+          "How do pull requests get protected by CODEFORT?",
+          "What are GitHub branch protection rules?",
+          "How do I prevent secrets from leaking into Git?",
+          "Explain supply chain attacks in npm",
+        ],
+      };
+    }
+
+    // 2. Pull Request (PR) Inquiries
+    if (
+      !/\b(fix|vulnerability|exploit|cwe|pwnrequest|injection|rce|target_run|error|bug)\b/i.test(msgLower) &&
+      (
+        msgLower.includes("pull request") ||
+        msgLower.includes("pr ") ||
+        msgLower.includes(" prs") ||
+        msgLower.includes("pr?") ||
+        msgLower.includes("pr review") ||
+        msgLower.includes("merge request") ||
+        msgLower.includes("checks api") ||
+        msgLower.includes("pr security") ||
+        msgLower.includes("how to review pr") ||
+        msgLower.includes("how do prs work") ||
+        msgLower.includes("how do pull requests work")
+      )
+    ) {
+      const explanation =
+        "### 🔀 GitHub Pull Requests & Security Review Architecture\n\n" +
+        "A **Pull Request (PR)** is a collaboration mechanism on GitHub that allows developers to propose changes from a feature branch or fork and have them reviewed, tested, and audited before merging into the main codebase.\n\n" +
+        "**Key Phases of the PR Lifecycle:**\n" +
+        "1. **Branching & Diff Generation:** Changes are committed to an isolated branch and opened as a PR against target branches like `main` or `production`.\n" +
+        "2. **Automated Status Checks (CI/CD):** GitHub Actions and security tools run test suites, linting, and vulnerability analysis.\n" +
+        "3. **Peer & Security Review:** Team members and automated bots inspect the unified diff for code quality, architectural fit, and security flaws.\n" +
+        "4. **Merge & Deployment:** Once all status checks pass and approvals are granted, the PR is merged (via merge commit, squash, or rebase).\n\n" +
+        "**Critical Security Threats in Pull Requests:**\n" +
+        "- 🚨 **Malicious Dependency Injection:** Sneaking compromised packages or typosquats into `package.json` or `requirements.txt`.\n" +
+        "- 🚨 **PwnRequest / Workflow Escalation:** Malicious PRs exploiting `pull_request_target` workflows to execute arbitrary code with repository write permissions and access to secrets.\n" +
+        "- 🚨 **Accidental Secret Commits:** Developers inadvertently committing `.env` tokens, AWS keys, or database credentials.\n\n" +
+        "**How CODEFORT Protects Your Pull Requests:**\n" +
+        "- **PR Security Badges:** Injects live status indicators (`PASS`, `REVIEW`, `BLOCK`) directly into the GitHub PR conversation page.\n" +
+        "- **Inline Code Warnings:** Annotates flagged lines in the 'Files Changed' tab with forensic explanations.\n" +
+        "- **BARQAI Side Panel:** Provides instant risk scoring (0-100), telemetry evidence, and 1-click clean patches to unblock developers safely.";
+
+      return {
+        reply: explanation,
+        explanation,
+        model: "Qwen 2.5 Coder 32B Instruct (MoE)",
+        suggested_actions: [
+          "Explain GitHub Actions pull_request_target risk",
+          "How do I install the CODEFORT Guard extension?",
+          "How do PR status checks work?",
+          "What is branch protection and why is it needed?",
+        ],
+      };
+    }
+
+    // 3. GitHub & Repository Inquiries
+    if (
+      !/\b(fix|vulnerability|exploit|cwe|error|bug|leak|secret|exposed)\b/i.test(msgLower) &&
+      (
+        msgLower.includes("github") ||
+        msgLower.includes("repository") ||
+        msgLower.includes("repo") ||
+        msgLower.includes("branch protection") ||
+        msgLower.includes("codeowners") ||
+        msgLower.includes("secret scanning") ||
+        msgLower.includes("gitignore") ||
+        msgLower.includes("git commit") ||
+        msgLower.includes("git merge") ||
+        msgLower.includes("git fork") ||
+        msgLower.includes("how to secure repo")
+      )
+    ) {
+      const explanation =
+        "### 📁 GitHub Repository Architecture & Security Best Practices\n\n" +
+        "A **GitHub Repository** contains all of your project's files, commit histories, branches, and revision metadata managed by Git. Securing your repository is the first line of defense in modern software supply chains.\n\n" +
+        "**Essential Repository Security Checklist:**\n" +
+        "1. **Enforce Branch Protection on `main` / `master`:**\n" +
+        "   - Require a pull request before merging (disallow direct pushes).\n" +
+        "   - Require at least 1 or 2 peer review approvals.\n" +
+        "   - Require status checks (tests, CODEFORT security scan) to pass before merging.\n" +
+        "   - Enforce branch protections for administrators.\n" +
+        "2. **Implement `CODEOWNERS`:**\n" +
+        "   - Place a `CODEOWNERS` file in `.github/CODEOWNERS` to automatically require domain-expert review on critical files (`.github/workflows/`, `security/`, `db/migrations/`).\n" +
+        "3. **Enable GitHub Secret Scanning & Push Protection:**\n" +
+        "   - Automatically blocks pushes that contain high-entropy API keys (OpenAI, AWS, GitHub personal access tokens).\n" +
+        "4. **Dependabot & Software Bill of Materials (SBOM):**\n" +
+        "   - Enable automated dependency security alerts and keep dependency lockfiles (`package-lock.json`, `poetry.lock`) strictly committed.\n" +
+        "5. **Signed Commits:**\n" +
+        "   - Require GPG or SSH signature verification to guarantee that commits originate from verified contributors.";
+
+      return {
+        reply: explanation,
+        explanation,
+        model: "Qwen 2.5 Coder 32B Instruct (MoE)",
+        suggested_actions: [
+          "How do I set up a CODEOWNERS file?",
+          "How do I configure branch protection rules?",
+          "How does Git secret scanning work?",
+          "Explain difference between Git fork and branch",
+        ],
+      };
+    }
+
+    // 4. CODEFORT Platform & Extension Inquiries
+    if (
+      !/\b(fix|error|bug|trace)\b/i.test(msgLower) &&
+      (
+        msgLower.includes("codefort") ||
+        msgLower.includes("codefort guard") ||
+        msgLower.includes("extension") ||
+        msgLower.includes("chrome extension") ||
+        msgLower.includes("firefox") ||
+        msgLower.includes("pairing code") ||
+        msgLower.includes("pairing") ||
+        msgLower.includes("dashboard") ||
+        msgLower.includes("forensic room")
+      )
+    ) {
+      const explanation =
+        "### 🛡️ CODEFORT: Architecture & Feature Overview\n\n" +
+        "**CODEFORT** is an enterprise cyber-defense platform designed to detect, diagnose, and remediate supply chain attacks, zero-day vulnerabilities, and pipeline exploits before pull requests are merged.\n\n" +
+        "**Core Platform Components:**\n" +
+        "1. **CODEFORT Guard (Chrome & Firefox Extension):**\n" +
+        "   - Integrates directly into GitHub PR pages without requiring you to switch tabs.\n" +
+        "   - Displays real-time **PR Security Badges** (`PASS`, `REVIEW`, `BLOCK`).\n" +
+        "   - Highlights risky code lines with inline warnings.\n" +
+        "   - Features the **BARQAI Side Panel** with risk scoring, vulnerability explanations, and 1-click clean patches.\n" +
+        "2. **Interactive Forensic Studio (Web Dashboard):**\n" +
+        "   - Explore detailed AST analysis, typosquatting intelligence, and workflow security graphs.\n" +
+        "   - Full telemetry evidence with cross-engine risk scoring.\n" +
+        "3. **BARQAI Remediation Engine:**\n" +
+        "   - Powered by frontier Qwen MoE reasoning to explain root causes and synthesize verified, non-breaking remediation patches.\n" +
+        "4. **Secure Extension Pairing:**\n" +
+        "   - Connect the extension in 5 seconds using a short-lived single-use pairing code generated from your web dashboard.";
+
+      return {
+        reply: explanation,
+        explanation,
+        model: "Qwen 2.5 Coder 32B Instruct (MoE)",
+        suggested_actions: [
+          "How do I install CODEFORT Guard extension?",
+          "How does the pairing code work?",
+          "Show me an example pull request scan",
+          "What security engines are included?",
+        ],
+      };
+    }
+  }
+
   let rewritten = original;
   let explanation = "";
   const suggestedActions = [
@@ -829,6 +1012,35 @@ export function synthesizeBarqAIChatResponse(req: BarqAIChatRequest): BarqAIChat
 
   // 23. Intelligent Dynamic Threat & Error Diagnostic Fallback
   else {
+    const isExplicitCodeTask =
+      hasCodeSnippet ||
+      hasErrorContext ||
+      /\b(fix|rewrite|refactor|error|bug|trace|stack|exception|failed|crash|syntaxerror|typeerror|overflow|vulnerability|exploit|cwe-|fail|patch|leak|remediation|line )\b/i.test(content);
+
+    if (!isExplicitCodeTask) {
+      const explanation =
+        "### 💡 BARQAI Software & Cyber-Defense Guidance\n\n" +
+        `**Inquiry Assessment:**\n` +
+        `Regarding your inquiry: *"${rawMsg}"*\n\n` +
+        "**Key Engineering & Security Principles:**\n" +
+        "1. **Zero-Trust Baseline:** Assume potential compromise across external inputs, third-party packages, and untrusted network endpoints.\n" +
+        "2. **Continuous Verification:** Integrate automated static analysis, security linters, and pull-request gating into your daily Git workflow.\n" +
+        "3. **Minimal Privilege Scope:** Restrict tokens, permissions, and environment variables to the exact boundary needed for execution.\n\n" +
+        "To analyze a specific error or vulnerability in your repository, paste your error message, terminal stack trace, or code snippet into the inputs on the left!";
+
+      return {
+        reply: explanation,
+        explanation,
+        model: "Qwen 2.5 Coder 32B Instruct (MoE)",
+        suggested_actions: [
+          "Explain how pull requests work",
+          "How to secure a GitHub repository",
+          "Diagnose an HTTP 500 error",
+          "Fix typosquatted lodashe dependency",
+        ],
+      };
+    }
+
     const isSuspicious =
       content.includes("suspect") ||
       content.includes("malicious") ||

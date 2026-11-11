@@ -46,12 +46,14 @@ export async function POST(req: NextRequest) {
                 role: "system",
                 content:
                   "You are BARQAI, the AI cybersecurity intelligence and code remediation copilot of CODEFORT.\n" +
-                  "Explain the error/vulnerability root cause and rewrite the code safely.\n" +
-                  "Return JSON with: {\"reply\": \"...\", \"explanation\": \"...\", \"rewritten_code\": \"...\"}",
+                  "You reply naturally to greetings (hi, hello) and answer questions about software projects, GitHub repositories, pull requests, CI/CD security, and developer workflows.\n" +
+                  "When the user asks conversational or conceptual questions without providing buggy code or asking for code rewrite, provide an articulate, expert response and set rewritten_code to null.\n" +
+                  "When the user provides an error, stack trace, or asks to rewrite/fix code, explain the root cause and provide clean rewritten code.\n" +
+                  "Return JSON with: {\"reply\": \"...\", \"explanation\": \"...\", \"rewritten_code\": null or \"...\"}",
               },
               { role: "user", content: prompt },
             ],
-            temperature: 0.1,
+            temperature: 0.2,
           }),
           signal: AbortSignal.timeout(5000),
         });
@@ -62,6 +64,12 @@ export async function POST(req: NextRequest) {
           try {
             const cleanJson = rawContent.replace(/```json|```/g, "").trim();
             const parsed = JSON.parse(cleanJson);
+            const rewritten =
+              parsed.rewritten_code &&
+              parsed.rewritten_code !== "null" &&
+              parsed.rewritten_code.trim() !== ""
+                ? parsed.rewritten_code
+                : undefined;
             const explanationText =
               parsed.explanation ||
               (parsed.reply && parsed.reply !== parsed.rewritten_code ? parsed.reply : null) ||
@@ -71,22 +79,28 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({
               reply: parsed.reply || rawContent,
               explanation: explanationText,
-              rewritten_code: parsed.rewritten_code || body.code_snippet,
-              original_code: body.code_snippet || "",
+              rewritten_code: rewritten,
+              original_code: rewritten ? body.code_snippet : undefined,
               diff: parsed.diff || undefined,
               model: "Qwen 2.5 Coder 32B Instruct (MoE)",
-              suggested_actions: ["Explain root cause in depth", "Show unified git diff", "Investigate suspicious threat vectors"],
+              suggested_actions: rewritten
+                ? ["Explain root cause in depth", "Show unified git diff", "Investigate suspicious threat vectors"]
+                : ["How do pull requests work?", "How to secure a GitHub repository", "Explain GitHub Actions security"],
             });
           } catch {
-            const codeMatch = rawContent.match(/```(?:\w+)?\n([\s\S]*?)```/);
-            const explanationText = rawContent.split("```")[0].trim() || rawContent;
+            const hasCode = Boolean(body.code_snippet || body.error_context);
+            const codeMatch = hasCode ? rawContent.match(/```(?:\w+)?\n([\s\S]*?)```/) : null;
+            const explanationText = codeMatch ? rawContent.split("```")[0].trim() : rawContent;
+            const rewritten = codeMatch ? codeMatch[1].trim() : undefined;
             return NextResponse.json({
               reply: rawContent,
               explanation: explanationText,
-              rewritten_code: codeMatch ? codeMatch[1].trim() : body.code_snippet,
-              original_code: body.code_snippet || "",
+              rewritten_code: rewritten,
+              original_code: rewritten ? body.code_snippet : undefined,
               model: "Qwen 2.5 Coder 32B Instruct (MoE)",
-              suggested_actions: ["Explain root cause in depth", "Show unified git diff", "Investigate suspicious threat vectors"],
+              suggested_actions: rewritten
+                ? ["Explain root cause in depth", "Show unified git diff", "Investigate suspicious threat vectors"]
+                : ["How do pull requests work?", "How to secure a GitHub repository", "Explain GitHub Actions security"],
             });
           }
         }
