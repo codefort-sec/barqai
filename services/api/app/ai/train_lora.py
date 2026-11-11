@@ -198,6 +198,9 @@ def train(
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=4,
         learning_rate=learning_rate,
+        warmup_steps=10,
+        weight_decay=0.01,
+        lr_scheduler_type="cosine",
         logging_steps=2,
         save_strategy="epoch",
         fp16=not torch.cuda.is_bf16_supported(),
@@ -222,6 +225,12 @@ def train(
     logger.info(f"Saving fine-tuned adapter weights to {output_dir}...")
     trainer.model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
+
+    # Clean intermediate checkpoints to save disk and prevent commit clutter
+    import shutil
+    for item in Path(output_dir).glob("checkpoint-*"):
+        if item.is_dir():
+            shutil.rmtree(item, ignore_errors=True)
     logger.info("=" * 70)
     logger.info("FINE-TUNING COMPLETED SUCCESSFULLY!")
     logger.info(f"Trained adapter weights saved to: {output_dir}")
