@@ -226,6 +226,19 @@ export const SidePanel: React.FC = () => {
         </div>
       )}
 
+      {/* Error Banner */}
+      {errorMsg && (
+        <div style={{
+          border: "1px solid #ff0055",
+          backgroundColor: "#1f0a0e",
+          color: "#ff0055",
+          padding: "8px 12px",
+          fontSize: "11px",
+        }}>
+          {errorMsg}
+        </div>
+      )}
+
       {/* Risk Score & Verdict HUD */}
       {activePR && (
         <div style={{

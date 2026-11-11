@@ -7,6 +7,7 @@ export interface PRInfo {
   owner: string;
   repo: string;
   prNumber: number;
+  pr: number;
 }
 
 export function parsePRUrl(url?: string | null): PRInfo | null {
@@ -20,10 +21,12 @@ export function parsePRUrl(url?: string | null): PRInfo | null {
       /^\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:\/|$)/
     );
     if (!match) return null;
+    const prNum = parseInt(match[3], 10);
     return {
       owner: match[1],
       repo: `${match[1]}/${match[2]}`,
-      prNumber: parseInt(match[3], 10),
+      prNumber: prNum,
+      pr: prNum,
     };
   } catch {
     return null;

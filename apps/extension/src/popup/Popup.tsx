@@ -85,8 +85,10 @@ export const Popup: React.FC = () => {
         ExtensionResponse<{ paired: boolean }>
       >(msg);
 
-      if (!res?.success || !res.data.paired) {
-        setErrorMsg(res?.error?.message || "Invalid or expired token");
+      if (!res || !res.success) {
+        setErrorMsg((res as any)?.error?.message || "Invalid or expired token");
+      } else if (!res.data.paired) {
+        setErrorMsg("Invalid or expired token");
       } else {
         setPairingToken("");
         await loadConfig();

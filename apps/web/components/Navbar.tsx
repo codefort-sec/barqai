@@ -16,7 +16,7 @@ export const Navbar: React.FC = () => {
         </Link>
 
         {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs text-text-muted">
+        <nav className="hidden md:flex items-center gap-4 text-xs text-text-muted">
           <Link href="/dashboard" className="hover:text-lime transition-colors">
             /01 DASHBOARD
           </Link>
@@ -25,12 +25,16 @@ export const Navbar: React.FC = () => {
             /02 SCAN FORENSICS
           </Link>
           <span className="text-text-dim">+</span>
-          <Link href="/settings" className="hover:text-lime transition-colors">
-            /03 EXTENSION PAIR
+          <Link href="/chat" className="text-lime hover:text-lime-muted font-bold transition-colors flex items-center gap-1">
+            💬 /03 BARQAI CHAT
           </Link>
           <span className="text-text-dim">+</span>
-          <Link href="/chat" className="text-lime hover:text-lime-muted font-bold transition-colors flex items-center gap-1">
-            <span>💬 /04 BARQAI CHAT</span>
+          <Link href="/settings" className="hover:text-lime transition-colors">
+            /04 PAIR EXTENSION
+          </Link>
+          <span className="text-text-dim">+</span>
+          <Link href="/extension" className="hover:text-lime transition-colors">
+            /05 INSTALL GUIDE
           </Link>
         </nav>
 
@@ -38,22 +42,22 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 text-[10px] text-text-dim">
             <span className="w-2 h-2 rounded-full bg-lime animate-pulse" />
-            <span>SYS_ONLINE: 8000</span>
+            <span className="text-lime">SYS_ONLINE: LIVE / 200 OK</span>
           </div>
 
           <Link
             href="/chat"
-            className="border border-lime text-lime hover:bg-lime hover:text-bg font-bold text-xs px-2.5 py-1.5 transition-colors uppercase tracking-wider flex items-center gap-1"
+            className="hidden lg:flex border border-lime text-lime hover:bg-lime hover:text-bg font-bold text-xs px-2.5 py-1.5 transition-colors uppercase tracking-wider items-center gap-1"
           >
             <span>💬 CHAT WITH BARQAI</span>
           </Link>
 
           <Link
-            href="/settings"
+            href="/extension"
             className="bg-lime hover:bg-lime-muted text-bg font-bold text-xs px-3 py-1.5 transition-colors uppercase tracking-wider flex items-center gap-1"
           >
-            <span>PAIR EXTENSION</span>
-            <span>↗</span>
+            <span>INSTALL GUARD</span>
+            <span>↓</span>
           </Link>
         </div>
       </div>

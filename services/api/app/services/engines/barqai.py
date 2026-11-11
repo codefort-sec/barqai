@@ -77,7 +77,7 @@ class BarqAIEngine:
 
         # Google Gemini Configuration
         self.gemini_api_key = settings.GEMINI_API_KEY or (settings.LLM_API_KEY if not self.openrouter_api_key else "")
-        self.gemini_model = getattr(settings, "GEMINI_MODEL", "gemini-1.5-flash")
+        self.gemini_model = getattr(settings, "GEMINI_MODEL", "gemini-3.8-flash")
 
     def _get_openrouter_client(self) -> Optional[AsyncOpenAI]:
         """Instantiates AsyncOpenAI client targeting OpenRouter if library & key are available."""

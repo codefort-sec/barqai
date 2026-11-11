@@ -34,6 +34,8 @@ Thumbs.db
 apps/extension/dist/
 *.zip
 *.xpi
+!apps/web/public/downloads/*.zip
+!apps/web/public/downloads/*.xpi
 
 # Local staging
 codefort/

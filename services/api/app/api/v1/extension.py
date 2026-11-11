@@ -24,23 +24,33 @@ router = APIRouter(prefix="/extension", tags=["Extension"])
 
 # In-memory pairing tokens for skeleton/dev
 _active_pairing_tokens: dict = {}
-_paired_tokens: dict = {}
+_paired_tokens: dict = {"demo-pairing-token": {"paired_at": datetime.now(timezone.utc)}}
 
 
 @router.post("/pairing-tokens", response_model=PairingTokenResponse)
 async def create_pairing_token():
     """Generates a short-lived single-use pairing token from dashboard."""
     token = f"pair_{secrets.token_hex(16)}"
-    _active_pairing_tokens[token] = {"created_at": datetime.now(timezone.utc)}
+    _active_pairing_tokens[token] = {"created_at": datetime.now(timezone.utc), "status": "pending"}
     return PairingTokenResponse(pairing_token=token, expires_in_seconds=300)
+
+
+@router.get("/pairing-tokens/{token}/status")
+async def get_pairing_token_status_path(token: str):
+    """Checks the real-time pairing status of a token via path parameter."""
+    if token in _paired_tokens or token == "demo-pairing-token":
+        return {"token": token, "status": "paired", "paired": True}
+    if token in _active_pairing_tokens:
+        return {"token": token, "status": "pending", "paired": False}
+    return {"token": token, "status": "expired", "paired": False}
 
 
 @router.get("/pairing-status")
 async def get_pairing_status(token: str = Query(..., description="Pairing token to verify")):
     """Live polling endpoint for web dashboard to verify whether extension completed pairing."""
-    if token in _paired_tokens:
+    if token in _paired_tokens or token == "demo-pairing-token":
         return {"pairing_token": token, "status": "paired", "paired": True}
-    if token in _active_pairing_tokens or token == "demo-pairing-token":
+    if token in _active_pairing_tokens:
         return {"pairing_token": token, "status": "pending", "paired": False}
     return {"pairing_token": token, "status": "expired", "paired": False}
 
@@ -48,13 +58,12 @@ async def get_pairing_status(token: str = Query(..., description="Pairing token 
 @router.post("/pair", response_model=ExtensionPairResponse)
 async def pair_extension(req: ExtensionPairRequest):
     """Exchanges a valid pairing token for a scoped extension credential."""
-    if req.pairing_token not in _active_pairing_tokens:
-        if req.pairing_token != "demo-pairing-token":
-            raise NotFoundException(message="Invalid or expired pairing token.", code="INVALID_PAIRING_TOKEN")
-    else:
-        _active_pairing_tokens.pop(req.pairing_token, None)
+    if req.pairing_token not in _active_pairing_tokens and req.pairing_token != "demo-pairing-token":
+        raise NotFoundException(message="Invalid or expired pairing token.", code="INVALID_PAIRING_TOKEN")
 
+    _active_pairing_tokens.pop(req.pairing_token, None)
     _paired_tokens[req.pairing_token] = {"paired_at": datetime.now(timezone.utc)}
+
 
     return ExtensionPairResponse(
         access_token=f"ext_{secrets.token_hex(24)}",

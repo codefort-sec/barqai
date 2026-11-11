@@ -49,10 +49,10 @@ class Settings(BaseSettings):
     GITHUB_TOKEN: str = ""
 
     # LLM / AI Unified Multi-Provider Engine (Barq-AI: Gemini + Qwen/OpenRouter)
-    LLM_PROVIDER: str = "auto"  # "auto", "qwen", "gemini", "openrouter"
+    LLM_PROVIDER: str = "auto"  # "auto", "gemini", "qwen", "openrouter"
     LLM_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GEMINI_MODEL: str = "gemini-3.8-flash"
     OPENROUTER_API_KEY: str = ""
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENROUTER_MODEL: str = "qwen/qwen-2.5-coder-32b-instruct"

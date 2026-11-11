@@ -38,6 +38,10 @@ export async function setStoredConfig(config: Partial<ExtensionConfig>): Promise
   });
 }
 
+export async function clearStoredAuth(): Promise<void> {
+  return setStoredConfig({ token: null, paired: false });
+}
+
 export async function clearStoredConfig(): Promise<void> {
   return new Promise((resolve) => {
     if (typeof chrome === "undefined" || !chrome.storage?.local) {
@@ -49,5 +53,3 @@ export async function clearStoredConfig(): Promise<void> {
     });
   });
 }
-
-

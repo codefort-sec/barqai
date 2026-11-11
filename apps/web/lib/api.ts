@@ -2,17 +2,21 @@
  * CodeFort Web Dashboard API Client
  */
 
+import { getWorkspaceId } from "./workspace";
 import { synthesizeBarqAIChatResponse } from "./barqai_engine";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://codefort-lilac.vercel.app";
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
+  const wsId = typeof window !== "undefined" ? getWorkspaceId() : "default";
+
   const res = await fetch(url, {
     ...options,
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "X-Workspace-Id": wsId,
       ...options.headers,
     },
     cache: "no-store",
@@ -46,7 +50,7 @@ export interface ScanDetail {
     evidence_observed: string[];
     why_it_matters: string;
     recommended_actions?: string[];
-    clean_patch?: string;
+    clean_patch?: string | null;
     analysis?: {
       summary: string;
       risk_level: string;

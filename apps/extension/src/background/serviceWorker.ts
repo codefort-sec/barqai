@@ -10,8 +10,9 @@ import {
   fetchPRStatus,
   fetchPRSummary,
   pairWithToken,
+  triggerPRScan,
 } from "../shared/api";
-import { getStoredConfig, clearStoredConfig } from "../shared/storage";
+import { clearStoredAuth, clearStoredConfig, getStoredConfig } from "../shared/storage";
 import { ExtensionMessage, ExtensionResponse } from "../shared/types";
 import { parsePRUrl } from "../utils/github-url-parser";
 
@@ -37,6 +38,11 @@ function setCache(key: string, data: any) {
   cache.set(key, { timestamp: Date.now(), data });
 }
 
+function invalidateCacheForPR(repo: string, pr: number) {
+  cache.delete(`status:${repo}:${pr}`);
+  cache.delete(`findings:${repo}:${pr}`);
+  cache.delete(`summary:${repo}:${pr}`);
+}
 
 /**
  * Automatically awakes the extension when a GitHub Pull Request is opened or visited.
@@ -186,11 +192,27 @@ async function handleMessage(
       return { success: true, data: { paired: success } };
     }
 
+    case "UNPAIR": {
+      await clearStoredAuth();
+      return { success: true, data: { paired: false } };
+    }
+
+    case "TRIGGER_PR_SCAN": {
+      invalidateCacheForPR(message.repo, message.pr);
+      const data = await triggerPRScan(message.repo, message.pr);
+      setCache(`status:${message.repo}:${message.pr}`, data);
+      return { success: true, data };
+    }
+
     case "GET_PR_STATUS": {
       const cacheKey = `status:${message.repo}:${message.pr}`;
-      const cached = getCached(cacheKey);
-      if (cached) {
-        return { success: true, data: cached };
+      if (message.force) {
+        cache.delete(cacheKey);
+      } else {
+        const cached = getCached(cacheKey);
+        if (cached) {
+          return { success: true, data: cached };
+        }
       }
       const data = await fetchPRStatus(message.repo, message.pr);
       setCache(cacheKey, data);
@@ -199,9 +221,13 @@ async function handleMessage(
 
     case "GET_PR_FINDINGS": {
       const cacheKey = `findings:${message.repo}:${message.pr}`;
-      const cached = getCached(cacheKey);
-      if (cached) {
-        return { success: true, data: cached };
+      if (message.force) {
+        cache.delete(cacheKey);
+      } else {
+        const cached = getCached(cacheKey);
+        if (cached) {
+          return { success: true, data: cached };
+        }
       }
       const data = await fetchPRFindings(message.repo, message.pr);
       setCache(cacheKey, data);
@@ -210,9 +236,13 @@ async function handleMessage(
 
     case "GET_PR_SUMMARY": {
       const cacheKey = `summary:${message.repo}:${message.pr}`;
-      const cached = getCached(cacheKey);
-      if (cached) {
-        return { success: true, data: cached };
+      if (message.force) {
+        cache.delete(cacheKey);
+      } else {
+        const cached = getCached(cacheKey);
+        if (cached) {
+          return { success: true, data: cached };
+        }
       }
       const data = await fetchPRSummary(message.repo, message.pr);
       setCache(cacheKey, data);

@@ -1,7 +1,7 @@
 from app.schemas.barqai_analysis import BARQAIFindingAnalysis, RiskLevel, StandardBARQAIAnalysis
 from app.schemas.common import EngineStatus, PaginatedResponse, ScanStatus, Severity, Verdict
 from app.schemas.finding import FindingBase, FindingListResponse, FindingResponse
-from app.schemas.scan import CoverageInfo, ScanCreateRequest, ScanResponse, ScanSummary, BARQAIExplanation, SandboxTelemetry
+from app.schemas.scan import BARQAIExplanation, CoverageInfo, SandboxTelemetry, ScanCreateRequest, ScanResponse, ScanSummary
 from app.schemas.extension import (
     ExtensionFindingsCount,
     ExtensionFindingsListResponse,

@@ -65,10 +65,13 @@ console.log("🗜 Creating release archives...");
 const projectRoot = fs.existsSync(path.resolve(rootDir, "../../.git"))
   ? path.resolve(rootDir, "../..")
   : rootDir;
-const chromeZip = path.join(projectRoot, "codefort-guard-chrome-v0.2.0.zip");
-const firefoxZip = path.join(projectRoot, "codefort-guard-firefox-v0.2.0.zip");
-const firefoxXpi = path.join(projectRoot, "codefort-guard-firefox-v0.2.0.xpi");
-const legacyZip = path.join(projectRoot, "codefort-guard-v0.2.0.zip");
+const webDownloadsDir = path.resolve(projectRoot, "apps/web/public/downloads");
+fs.mkdirSync(webDownloadsDir, { recursive: true });
+
+const chromeZip = path.join(projectRoot, "codefort-guard-chrome-v0.1.3.zip");
+const firefoxZip = path.join(projectRoot, "codefort-guard-firefox-v0.1.3.zip");
+const firefoxXpi = path.join(projectRoot, "codefort-guard-firefox-v0.1.3.xpi");
+const legacyZip = path.join(projectRoot, "codefort-guard-v0.1.3.zip");
 
 function createZip(sourceDir, destZip) {
   if (fs.existsSync(destZip)) {
@@ -104,8 +107,21 @@ fs.copyFileSync(chromeZip, legacyZip);
 createZip(firefoxDir, firefoxZip);
 fs.copyFileSync(firefoxZip, firefoxXpi);
 
+// Sync to Web Public Downloads
+fs.copyFileSync(chromeZip, path.join(webDownloadsDir, "codefort-guard-chrome-v0.1.3.zip"));
+fs.copyFileSync(chromeZip, path.join(webDownloadsDir, "codefort-guard-chrome.zip"));
+fs.copyFileSync(chromeZip, path.join(webDownloadsDir, "codefort-guard-chrome-v0.1.2.zip"));
+
+fs.copyFileSync(firefoxZip, path.join(webDownloadsDir, "codefort-guard-firefox-v0.1.3.zip"));
+fs.copyFileSync(firefoxZip, path.join(webDownloadsDir, "codefort-guard-firefox.zip"));
+fs.copyFileSync(firefoxZip, path.join(webDownloadsDir, "codefort-guard-firefox-v0.1.2.zip"));
+
+fs.copyFileSync(firefoxXpi, path.join(webDownloadsDir, "codefort-guard-firefox-v0.1.3.xpi"));
+fs.copyFileSync(firefoxXpi, path.join(webDownloadsDir, "codefort-guard-firefox.xpi"));
+fs.copyFileSync(firefoxXpi, path.join(webDownloadsDir, "codefort-guard-firefox-v0.1.2.xpi"));
+
 console.log("\n✅ Packaged successfully!");
 console.log(`- Chrome Extension:  ${chromeZip}`);
 console.log(`- Firefox Extension: ${firefoxZip}`);
 console.log(`- Firefox XPI:       ${firefoxXpi}`);
-
+console.log(`- Web Downloads:     ${webDownloadsDir}`);

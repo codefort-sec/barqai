@@ -22,6 +22,7 @@ export interface ScanSummary {
   evidence_observed: string[];
   why_it_matters: string;
   recommended_actions?: string[];
+  clean_patch?: string | null;
 }
 
 export interface FindingsCount {
@@ -101,13 +102,15 @@ export interface ExtensionConfig {
 
 // Background <-> Content Script / Popup Messaging
 export type ExtensionMessage =
-  | { type: "GET_PR_STATUS"; repo: string; pr: number }
-  | { type: "GET_PR_FINDINGS"; repo: string; pr: number }
-  | { type: "GET_PR_SUMMARY"; repo: string; pr: number }
-  | { type: "GET_PR_REMEDIATION"; repo: string; pr: number }
+  | { type: "GET_PR_STATUS"; repo: string; pr: number; force?: boolean }
+  | { type: "GET_PR_FINDINGS"; repo: string; pr: number; force?: boolean }
+  | { type: "GET_PR_SUMMARY"; repo: string; pr: number; force?: boolean }
+  | { type: "GET_PR_REMEDIATION"; repo: string; pr: number; force?: boolean }
   | { type: "APPLY_PR_REMEDIATION"; repo: string; pr: number }
+  | { type: "TRIGGER_PR_SCAN"; repo: string; pr: number }
   | { type: "CHECK_PAIRING_STATUS" }
   | { type: "PAIR_WITH_TOKEN"; pairingToken: string }
+  | { type: "UNPAIR" }
   | { type: "DISCONNECT" }
   | { type: "OPEN_SIDEPANEL"; windowId?: number; tabId?: number }
   | { type: "AWAKE_PR_SCAN"; repo: string; pr: number; status?: ExtensionPRStatusResponse | null };

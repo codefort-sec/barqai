@@ -60,6 +60,25 @@ export async function fetchPRSummary(repo: string, pr: number): Promise<Extensio
   );
 }
 
+export async function triggerPRScan(repo: string, pr: number): Promise<ExtensionPRStatusResponse> {
+  const parts = repo.split("/");
+  if (parts.length === 2) {
+    try {
+      await request(
+        `/api/v1/repositories/${encodeURIComponent(parts[0])}/${encodeURIComponent(parts[1])}/pull-requests/${pr}/scans`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        }
+      );
+    } catch {
+      // Continue to fetch status even if queue returns non-200
+    }
+  }
+  return fetchPRStatus(repo, pr);
+}
+
 export async function fetchPRRemediation(repo: string, pr: number): Promise<ExtensionRemediationResponse> {
   return request<ExtensionRemediationResponse>(
     `/api/v1/extension/remediation?repo=${encodeURIComponent(repo)}&pr=${pr}`

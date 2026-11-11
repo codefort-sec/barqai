@@ -78,7 +78,7 @@ async def get_scan_telemetry(scan_id: str = Path(..., description="Scan UUID")):
 
 @router.post("/demo/scan", response_model=ScanResponse)
 async def run_demo_scan(body: ScanCreateRequest):
-    """Executes live multi-engine PR security scan with Qwen3.8-Max explanation."""
+    """Executes live multi-engine PR security scan with Barq-AI explanation."""
     from datetime import datetime, timezone
     import uuid
     from app.engines import (
@@ -103,7 +103,7 @@ async def run_demo_scan(body: ScanCreateRequest):
 
     all_raw_findings = static_findings + dep_findings + workflow_findings + sandbox_data.get("findings", [])
 
-    # 2. Qwen3.8-Max BARQAI Inference
+    # 2. Barq-AI Multi-Provider Inference
     explanation = await barqai_engine.analyze(
         pr_diff=diff_content,
         static_findings=static_findings,

@@ -1,8 +1,12 @@
 # CODEFORT // ZERO-TRUST PR & SUPPLY CHAIN DEFENSE POWERED BY Barq-AI
 
 [![CodeFort CI](https://github.com/codefort-sec/barqai/actions/workflows/ci.yml/badge.svg)](https://github.com/codefort-sec/barqai/actions/workflows/ci.yml)
+[![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-Official_Store-ff7139?style=flat-square&logo=firefox-browser)](https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/)
 [![Web Dashboard](https://img.shields.io/badge/Web_Dashboard-Vercel_Live-00ff66?style=flat-square&logo=vercel)](https://codefort-web.vercel.app)
-[![FastAPI Engine](https://img.shields.io/badge/FastAPI_Engine-Vercel_Live-00e5ff?style=flat-square&logo=fastapi)](https://codefort-lilac.vercel.app/docs)
+[![Install Guide](https://img.shields.io/badge/Install_Guide-Extension_Setup-d7ff35?style=flat-square&logo=googlechrome)](https://codefort-web.vercel.app/extension)
+[![FastAPI Core](https://img.shields.io/badge/FastAPI_Engine-Vercel_Live-00e5ff?style=flat-square&logo=fastapi)](https://codefort-lilac.vercel.app/docs)
+[![Barq-AI Engine](https://img.shields.io/badge/Barq--AI_Engine-Gemini_3.8_Flash_%2B_Qwen_2.5-4285F4?style=flat-square&logo=google)](https://codefort-lilac.vercel.app/docs)
+[![Extension Release](https://img.shields.io/badge/Extension_Release-v0.1.3-ff0055?style=flat-square&logo=github)](https://github.com/codefort-sec/codefort/releases/tag/v0.1.3)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue?style=flat-square)](LICENSE)
 [![Python Tests](https://img.shields.io/badge/Pytest-82%20Passed%20(100%25)-00ff66?style=flat-square&logo=python)](services/api/tests/)
 [![OSV Benchmark](https://img.shields.io/badge/OSV_Evaluation-20%2F20%20(100%25)-00e5ff?style=flat-square)](services/api/datasets/evaluation/barqai_test.jsonl)
@@ -15,13 +19,17 @@
 
 | Component | Target URL / Asset | Description |
 | :--- | :--- | :--- |
-| **Web Dashboard** | [`https://codefort-web.vercel.app`](https://codefort-web.vercel.app) | Cyber Brutalist Next.js 14 UI with side-by-side patch diffing, real-time telemetry, & 1-click apply |
-| **Backend API** | [`https://codefort-lilac.vercel.app`](https://codefort-lilac.vercel.app) | FastAPI core, multi-engine detection, OSV client & Barq-AI explainability |
-| **API Documentation** | [`https://codefort-lilac.vercel.app/docs`](https://codefort-lilac.vercel.app/docs) | Interactive OpenAPI 3.0 Swagger UI with full schemas and remediation endpoints |
-| **Chrome Extension (v0.2.0)** | [`apps/extension`](apps/extension) | Manifest V3 guard extension with PR badge, inline diff warnings, and BARQAI Side Panel |
-| **Firefox Extension (v0.2.0)** | [`apps/extension`](apps/extension) | WebExtension with Gecko ID for Mozilla Firefox |
-| **GitHub Repository** | [`codefort-sec/barqai`](https://github.com/codefort-sec/barqai) | Main monorepo containing AI engine, scanners, and evaluation benchmark |
-| **GitHub Organization** | [`https://github.com/codefort-sec`](https://github.com/codefort-sec) | Organization holding platform monorepo and live demo attack repositories |
+| **Firefox Add-on (Official Store)** | [**`addons.mozilla.org`**](https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/) | **Reviewed & Approved Mozilla Add-ons Listing (1-Click Install)** |
+| **Web Dashboard** | [`https://codefort-web.vercel.app`](https://codefort-web.vercel.app) | Cyber Brutalist UI for PR forensics, policy toggles, & live multi-repo audits |
+| **Barq-AI Copilot Studio** | [`https://codefort-web.vercel.app/chat`](https://codefort-web.vercel.app/chat) | Interactive AI security assistant & unified git diff code rewriter |
+| **Extension Setup Guide** | [`https://codefort-web.vercel.app/extension`](https://codefort-web.vercel.app/extension) | Interactive step-by-step browser extension installer & pairing assistant |
+| **Backend API Engine** | [`https://codefort-lilac.vercel.app`](https://codefort-lilac.vercel.app) | FastAPI core, multi-engine detection, OSV client & Barq-AI explainability |
+| **API Documentation** | [`https://codefort-lilac.vercel.app/docs`](https://codefort-lilac.vercel.app/docs) | Interactive Swagger UI with OpenAPI 3.0 schemas and remediation endpoints |
+| **Chrome Extension Package** | [`v0.1.3 Chrome (.zip)`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-chrome-v0.1.3.zip) | Manifest V3 guard with PR badge, inline diff warnings, and BarqAI Side Panel |
+| **Firefox Offline Binaries** | [`v0.1.3 Firefox (.xpi)`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.xpi) / [`.zip`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.zip) | Mozilla AMO compliant WebExtension package (`strict_min_version: 115.0`) |
+| **Malicious Test Repo** | [`codefort-sec/vulnerable-test-repo`](https://github.com/codefort-sec/vulnerable-test-repo) | Live attack playground with active adversarial PRs (#1, #2, #3) |
+| **Clean Baseline Repo** | [`codefort-sec/clean-test-repo`](https://github.com/codefort-sec/clean-test-repo) | Compliant baseline repository demonstrating verified PASS PRs (0 risk score) |
+| **GitHub Organization** | [`https://github.com/codefort-sec`](https://github.com/codefort-sec) | Organization holding platform monorepo and public demo repositories |
 
 ---
 
@@ -139,9 +147,9 @@ flowchart TD
         DOM["GitHub PR Page & Diff Viewer"]
     end
 
-    subgraph Chrome["Chrome Extension (CodeFort Guard MV3)"]
-        SW["Service Worker (Lifecycle Listener)"]
-        CS["Content Script (IIFE Observer)"]
+    subgraph Browser["Browser Extension (CodeFort Guard MV3)"]
+        SW["Service Worker (Lifecycle Listener & Cache)"]
+        CS["Content Script (IIFE Observer & DOM Anchor)"]
         Badge["Cyber Brutalist Inline PR Badge"]
         LineWarn["Diff Line-Level Warnings"]
         Drawer["⚡ Inline 'Fix with BARQAI' Drawer"]
@@ -158,19 +166,20 @@ flowchart TD
         SE4["Engine 4: Dynamic Sandbox Telemetry"]
         Corr["Cross-Engine Threat Correlator"]
         Pol["Deterministic Policy Evaluator"]
-        BARQ["Barq-AI Multi-Provider (Qwen MoE + Gemini)"]
+        BARQ["Barq-AI Multi-Provider (Gemini + Qwen MoE)"]
         PV["PatchVerifier (In-Memory Re-Scan & Syntax Linter)"]
     end
 
     subgraph Web["Web Dashboard (Next.js 14)"]
         Dash["/dashboard — Multi-Repo PR Scans"]
-        ChatView["/chat — BARQAI Chat & Code Rewriter"]
         Foren["/scans/[id] — Forensics & 1-Click Verified Fixes"]
         DiffView["Side-by-Side & Unified Diff Viewers"]
+        ChatView["/chat — BARQAI Chat & Code Rewriter"]
         Sett["/settings — Extension Pairing Tokens"]
+        Inst["/extension — Interactive Guide"]
     end
 
-    PR -->|Webhook / On-Demand| Router
+    PR -->|Webhook / Dynamic GitHub API| Router
     DOM -->|Injected by| CS
     CS <-->|Cached Status| SW
     SW <-->|Secure API Query| Router
@@ -195,20 +204,23 @@ flowchart TD
 
 ---
 
-## 🔍 Core Detection Engines
+## 🔍 Core Detection Engines & Zero False-Positive Guarantees
 
-1. **Static Shell & AST Analyzer (`StaticAnalyzer`)**:
-   - Detects remote execution pipes (`curl -sL ... | bash`, `wget | sh`).
-   - Flags obfuscated payloads (`base64 -d`, `eval(Buffer.from)`, hex sequences).
-   - Identifies reverse shell hooks (`/dev/tcp/`, netcat spawns, subprocess sockets).
+1. **Static Shell & AST Dropper Analyzer (`StaticAnalyzer`)**:
+   - Strictly targets dangerous installation lifecycle hooks: `preinstall`, `postinstall`, `install`, `prepare`.
+   - **Zero False-Positive Filter**: Standard developer workflow commands (`build`, `dev`, `test`, `lint`, `start`) are completely ignored.
+   - Detects remote execution pipes (`curl -sL ... | bash`, `wget | sh`), base64 obfuscation (`eval(Buffer.from)`), reverse shells (`/dev/tcp/`, sockets), and hex sequences.
 
 2. **Dependency Intelligence & Typosquat Detector (`DependencyIntelligence`)**:
    - Evaluates dependency names using Levenshtein distance metrics against top-tier packages.
-   - Queries OSV (Open Source Vulnerability) database in real time for CVE/GHSA advisories.
-   - Computes package risk scores based on registry age, typosquat edit distance, and security advisories.
+   - **Zero False-Positive Protection**:
+     - Built-in whitelist for legitimate short package names (`nest`, `jest`, `vite`, `nuxt`, `koa`, `pinia`, `redux`, `eslint`, `prettier`, `zod`, `blue`, `text`, `vue`, `next`, etc.).
+     - Minimum length threshold ($\ge 5$ characters) before fuzzy matching to eliminate benign word collisions.
+     - Scoped packages (`@types/...`, `@nestjs/...`) are isolated from unscoped comparisons.
+   - Queries Google's OSV (Open Source Vulnerability) database in real time for CVE/GHSA advisories across PyPI, npm, and Go.
 
 3. **CI/CD Workflow Linter (`WorkflowLinter`)**:
-   - Catches privilege escalation patterns in GitHub Actions (`pull_request_target` with explicit checkout of fork ref).
+   - Catches privilege escalation patterns in GitHub Actions (`pull_request_target` with explicit checkout of untrusted fork refs).
    - Flags dangerous permission scopes (`permissions: write-all`).
    - Detects untrusted script injection vulnerabilities (e.g., inline `${{ github.event.pull_request.title }}`).
 
@@ -221,12 +233,19 @@ flowchart TD
    - Re-scans patched files across static, dependency, and workflow linters.
    - Verifies target exploit elimination with 0 new regressions.
 
-6. **AI Remediation Engine & Patch Studio (`RemediationEngine`)**:
-   - Uses Qwen / frontier LLM with prompt instruction guardrails (`REMEDIATION_PROMPT`) to generate minimal, non-breaking security corrections.
-   - Validates unified diff syntax and enforces file modification boundary checks (rejects path traversal `../`, `.env`, `.git/`).
-   - Conducts isolated in-memory sandbox testing (syntax validation, simulated unit tests, Semgrep/static re-scans, OSV dependency checks).
-   - Strict decoupling: Passing sandbox tests sets verification checklist to `"Passed"`, but developer approval is explicitly required via `POST /api/v1/remediation/{id}/approve`.
-   - Powers the interactive **`CODEFORT_ / PATCH STUDIO`** in the dashboard with side-by-side code diffs, advisory disclaimers, and interactive approval.
+6. **Barq-AI Multi-Provider Reasoning & Autonomous Remediation Engine (`RemediationEngine`)**:
+   - **Unified Architecture**: Primary Google Gemini (`gemini-3.8-flash`) with automatic sub-second cascade to Qwen 2.5 Coder 32B (via OpenRouter) and a 0ms deterministic fail-safe.
+   - **Zero-Hallucination Evidence Grounding**: Dynamically injects few-shot exemplar grounding from attack datasets (`dataset.jsonl`) to strictly anchor reasoning to detected AST/package telemetry.
+   - **1-Click Clean Remediation Patches**: Synthesizes verified unified git diffs (`clean_patch`) displayed directly in the Web Forensics Dashboard, GitHub Extension in-page overlay, and BarqAI Chat studio.
+   - **Strict Decoupling & Approval Workflow**: Automated sandbox verification confirms exploit elimination, but developer approval is explicitly required via `POST /api/v1/remediation/{id}/approve`.
+   - **Structured Explanations**:
+     - **What Changed**: High-level file and logic modification breakdown.
+     - **Evidence Observed**: Concrete line numbers, indicators, and rule triggers.
+     - **Why It Matters**: Technical risk assessment (e.g. runner takeover, credential leakage).
+     - **Recommended Actions**: Clear remediation steps and patch candidate preview.
+
+7. **Dynamic GitHub API Pull Request Fetching**:
+   - Connect any GitHub repository on the dashboard. CodeFort queries GitHub's API dynamically for all real open PRs, commit authors, titles, and diffs.
 
 ---
 
@@ -447,77 +466,117 @@ DETECT ──> ANALYZE ──> EXPLAIN ──> REMEDIATE ──> VERIFY ──> 
 
 ---
 
-## 🚀 Quick Start: Running & Testing
+## 📦 Browser Extension Installation Guide
 
-### 1. Run the Multi-Model Security Benchmark
-```bash
-cd services/api
+CodeFort Guard injects security verdicts directly into GitHub Pull Requests. It works on all Chromium-based browsers and Mozilla Firefox. You can also visit our interactive installer at **[`https://codefort-web.vercel.app/extension`](https://codefort-web.vercel.app/extension)**.
 
-# Standard 4-case benchmark + 20-case OSV evaluation:
-python -m app.ai.eval_suite
+### A. Google Chrome / Chromium (Brave, Edge, Arc)
 
-# Comparative benchmark matrix (Qwen 2.5 Coder vs Gemini 1.5 Flash vs Deterministic):
-python -m app.ai.eval_suite --compare
-```
+1. **Download the Extension Archive**:
+   - Download [`codefort-guard-chrome-v0.1.3.zip`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-chrome-v0.1.3.zip) from GitHub Releases or directly from the [CodeFort Install Guide](https://codefort-web.vercel.app/extension).
+2. **Extract the ZIP**:
+   - Extract the archive to a local folder (e.g., `~/Downloads/codefort-guard-chrome`).
+3. **Open Extensions in Chrome**:
+   - In your URL bar, navigate to: `chrome://extensions/`
+   - *(Brave: `brave://extensions/` | Edge: `edge://extensions/`)*
+4. **Enable Developer Mode**:
+   - Toggle the **Developer mode** switch in the top-right corner.
+5. **Load the Unpacked Folder**:
+   - Click **Load unpacked** (top-left).
+   - Select the extracted `codefort-guard-chrome` folder.
+6. **Pin to Toolbar**:
+   - Click the Extensions puzzle icon in Chrome and pin **CodeFort Guard**.
+7. **Verify on GitHub**:
+   - Open any PR (e.g. [`codefort-sec/vulnerable-test-repo/pull/1`](https://github.com/codefort-sec/vulnerable-test-repo/pull/1)).
+   - A proactive threat notification banner slides in, and the **🛡 CODEFORT: BLOCKED** badge appears under the PR title!
+---
 
-### 2. Run the Full Backend Automated Test Suite
-```bash
-cd services/api
-python -m pytest -v services/api/tests/
-# Result: 82 passed in ~80s across all test suites (100% pass rate)
-```
+### B. Mozilla Firefox (Official Store & Developer Mode)
 
-### 3. Build and Package the Chrome Extension (Manifest V3)
-```bash
-cd apps/extension
-npm install
-npm run build
-# Compiles into dist/content.js (pure IIFE, 0 import statements), dist/background.js, dist/popup.html, dist/sidepanel.html
-npm run package
-# Packages codefort-guard-chrome-v0.2.0.zip and Firefox XPI archives
-```
+> **🎉 Officially Reviewed and Approved on Mozilla Add-ons (AMO)!** Firefox users can install CodeFort Guard in a single click directly from the official store.
 
+#### Option 1: 1-Click Install from Firefox Add-ons (Recommended)
+1. Navigate to the official store page: [**`https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/`**](https://addons.mozilla.org/en-US/firefox/addon/codefort-guard/)
+2. Click **+ Add to Firefox**.
+3. Accept the permission prompt. CodeFort Guard is permanently installed and active with automatic updates!
 
-### 4. Build the Web Dashboard (Next.js 14)
-```bash
-cd apps/web
-npm install
-npm run build
-# Compiles optimized static & server-rendered production build with 0 errors
-```
-
-### 5. Running the Full Stack Locally
-
-```bash
-# Clone the repository
-git clone https://github.com/codefort-sec/barqai.git
-cd barqai
-
-# 1. Run Backend API
-cd services/api
-uv venv
-uv pip install -e ".[dev]"
-uv run uvicorn app.main:app --reload --port 8000
-
-# 2. Run Web Dashboard
-cd ../../apps/web
-npm install
-npm run dev
-
-# 3. Load Chrome Extension
-# Open chrome://extensions -> Enable Developer Mode -> Click "Load unpacked" -> Select apps/extension/dist
-```
+#### Option 2: Offline / Developer Mode (.xpi or .zip)
+1. **Download the Package**:
+   - Download [`codefort-guard-firefox-v0.1.3.xpi`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.xpi) or [`codefort-guard-firefox-v0.1.3.zip`](https://github.com/codefort-sec/codefort/releases/download/v0.1.3/codefort-guard-firefox-v0.1.3.zip).
+2. **Open Firefox Debugging**:
+   - In Firefox, navigate to: `about:debugging#/runtime/this-firefox`
+3. **Load Temporary Add-on**:
+   - Click **Load Temporary Add-on...**
+   - Select the downloaded `.xpi` file (or `manifest.json` from the extracted zip).
+4. **Verify Gecko Activation**:
+   - Extension ID `codefort-guard@codefort.sec` activates instantly with full Manifest V3 background support.
+   - Open [`codefort-sec/vulnerable-test-repo/pull/1`](https://github.com/codefort-sec/vulnerable-test-repo/pull/1) to see inline verdicts and diff warnings.
 
 ---
 
-## 🧪 Verified Attack Scenarios
+### C. Pairing Your Extension with CodeFort
+
+1. Navigate to **[`https://codefort-web.vercel.app/settings`](https://codefort-web.vercel.app/settings)** or **[`/extension`](https://codefort-web.vercel.app/extension)**.
+2. Click **Generate Pairing Token ↗** to produce a single-use token (valid for 300 seconds).
+   *(Quick demo shortcut: you can also enter `demo-pairing-token` directly into the extension popup!)*
+3. Click the **CodeFort Guard** icon in your browser toolbar, paste the token, and click **Pair Extension**.
+4. The status indicator immediately turns green (`ONLINE`), granting your extension secure access to scan telemetry and custom policies.
+
+---
+
+## 🧪 Verified Attack & Defense Matrix
 
 | Scenario ID | Live PR Link | Attack Vector | Detection Rule | Verdict | Risk Score | Remediation Status |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: |
-| **`01_malicious_preinstall`** | [`vulnerable-test-repo#1`](https://github.com/codefort-sec/vulnerable-test-repo/pull/1) | `curl \| bash` C2 dropper in `package.json` | `npm.exec.preinstall` | **`BLOCKED`** | 100 / 100 | **Verified (0 Regressions)** |
-| **`02_typosquat_dependency`** | [`vulnerable-test-repo#2`](https://github.com/codefort-sec/vulnerable-test-repo/pull/2) | Typosquatted package `crypt0-js` / `lodashe` | `dep.typosquat` | **`BLOCKED`** | 70 / 100 | **Verified (0 Regressions)** |
+| **`01_malicious_preinstall`** | [`vulnerable-test-repo#1`](https://github.com/codefort-sec/vulnerable-test-repo/pull/1) | `curl \| bash` C2 dropper in `package.json` | `npm.lifecycle.preinstall.malicious_cmd` | **`BLOCKED`** | 100 / 100 | **Verified (0 Regressions)** |
+| **`02_typosquat_dependency`** | [`vulnerable-test-repo#2`](https://github.com/codefort-sec/vulnerable-test-repo/pull/2) | Typosquatted package `reqeusts` (edit distance 1) | `dep.typosquat` | **`REVIEW_REQUIRED`** | 65 / 100 | **Verified (0 Regressions)** |
 | **`03_unsafe_workflow_injection`** | [`vulnerable-test-repo#3`](https://github.com/codefort-sec/vulnerable-test-repo/pull/3) | `pull_request_target` + write-all + `${{ github.event... }}` | `workflow.target.checkout` | **`BLOCKED`** | 100 / 100 | **Verified (0 Regressions)** |
-| **`04_clean_feature_pr`** | [`clean-test-repo#1`](https://github.com/codefort-sec/clean-test-repo/pull/1) | Standard benign AST expression parser | *N/A (clean baseline)* | **`PASS`** | 0 / 100 | **Clean Baseline (PASS)** |
+| **`04_clean_feature_pr`** | [`clean-test-repo#1`](https://github.com/codefort-sec/clean-test-repo/pull/1) | Standard benign AST expression parser (`src/telemetry.js`) | *N/A (clean baseline)* | **`PASS`** | 0 / 100 | **Clean Baseline (PASS)** |
+
+---
+
+## 💻 Local Development & Testing
+
+### Prerequisites
+- Node.js $\ge 18$
+- Python $\ge 3.11$ (`uv` package manager recommended)
+
+### 1. Clone & Setup
+```bash
+git clone https://github.com/codefort-sec/codefort.git
+cd codefort
+```
+
+### 2. Run Backend API
+```bash
+cd services/api
+uv sync
+uv run uvicorn app.main:app --reload --port 8000
+```
+API Swagger docs will be live at `http://localhost:8000/docs`.
+
+### 3. Run Backend Test Suite & Benchmarks
+```bash
+cd services/api
+uv run pytest tests/
+python -m app.ai.eval_suite --compare
+```
+
+### 4. Run Web Dashboard
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+Web Dashboard will be live at `http://localhost:3000`.
+
+### 5. Build & Package Browser Extension
+```bash
+cd apps/extension
+npm install
+npm run package
+# Generates codefort-guard-chrome-v0.1.3.zip, firefox-v0.1.3.zip, and firefox-v0.1.3.xpi
+```
 
 ---
 
@@ -526,8 +585,19 @@ npm run dev
 ```
 barqai/
 ├── apps/
-│   ├── web/                     # Next.js 14 Cyber Brutalist Dashboard with side-by-side patch viewer
-│   └── extension/               # Chrome & Firefox Guard Extension (Vite + React, IIFE content script)
+│   ├── web/                     # Next.js 14 Cyber Brutalist Dashboard & Barq-AI Studio
+│   │   ├── app/
+│   │   │   ├── dashboard/       # Multi-Repo PR Scans & Universal Audit Bar
+│   │   │   ├── chat/            # Barq-AI Copilot & Unified Git Diff Code Rewriter
+│   │   │   ├── extension/       # Interactive Extension Installation Guide
+│   │   │   ├── scans/[id]/      # Forensic Breakdown & 1-Click Verified Fixes
+│   │   │   └── settings/        # Pairing Token Generator & Security Policies
+│   └── extension/               # CodeFort Guard MV3 Extension (Vite + React, IIFE content script)
+│       ├── public/              # Chrome & Firefox Manifest V3 definitions
+│       └── src/
+│           ├── content/         # GitHub DOM Badge & Line Warning Injections
+│           ├── popup/           # Pairing & PR Risk Popover
+│           └── background/      # Resilient Service Worker & API Client
 ├── services/
 │   └── api/                     # FastAPI Detection Engine & Barq-AI Core
 │       ├── app/
@@ -539,7 +609,7 @@ barqai/
 │       │   ├── raw/             # osv_data.json
 │       │   ├── processed/       # vulnerabilities.json
 │       │   └── evaluation/      # barqai_test.jsonl (20-case OSV evaluation dataset)
-│       └── tests/               # 78 pytest unit and integration tests across 7 test suites
+│       └── tests/               # 82 pytest unit and integration tests across 7 test suites
 ├── fixtures/
 │   └── scenarios/               # Attack scenarios for automated testing & grading
 └── scripts/
@@ -549,5 +619,6 @@ barqai/
 ---
 
 ## 👥 Contributors & Hackathon Team
+
 - **CodeFort Security** ([@codefort-sec](https://github.com/codefort-sec))
-- Built for next-generation developer tooling, software supply chain defense, and autonomous AI remediation.
+- Built for next-generation developer tooling, zero-trust pull request defense, software supply chain protection, and autonomous AI remediation.
