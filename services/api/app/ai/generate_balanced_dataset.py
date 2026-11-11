@@ -2880,6 +2880,22 @@ def generate_dataset(output_path: str = "services/api/app/ai/dataset.jsonl"):
     p = Path(output_path)
     p.parent.mkdir(parents=True, exist_ok=True)
 
+    # Ingest 30 local curated samples from C:\Users\VICTUS\Desktop\AVISHKAR\datasets
+    try:
+        from app.ai.ingest_local_datasets import generate_local_curated_samples
+    except ImportError:
+        try:
+            from ingest_local_datasets import generate_local_curated_samples
+        except ImportError:
+            from services.api.app.ai.ingest_local_datasets import generate_local_curated_samples
+
+    local_samples = generate_local_curated_samples()
+    for s in local_samples:
+        DATASET.append({
+            "user": s["prompt"].strip(),
+            "assistant": s["expected"]
+        })
+
     actions = {"pass": 0, "review": 0, "block": 0}
     with open(p, "w", encoding="utf-8") as f:
         for item in DATASET:
