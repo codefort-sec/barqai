@@ -21,6 +21,93 @@ interface MessageItem {
   timestamp: string;
 }
 
+
+function renderInlineMarkdown(str: string) {
+  const parts = str.split(/(\*\*.*?\*\*|`.*?`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="font-bold text-text">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          key={i}
+          className="bg-bg border border-border text-lime text-[11px] px-1 py-0.5 font-mono"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+}
+
+function renderFormattedExplanation(text: string) {
+  if (!text) return null;
+  const lines = text.split("\n");
+
+  return (
+    <div className="space-y-2 text-xs leading-relaxed text-text">
+      {lines.map((line, idx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={idx} className="h-1.5" />;
+        }
+
+        // Section Headers
+        if (trimmed.startsWith("### ")) {
+          return (
+            <h4
+              key={idx}
+              className="text-xs font-extrabold text-lime uppercase tracking-wider pt-2 border-b border-border/40 pb-1 mb-1.5 flex items-center gap-1.5"
+            >
+              {trimmed.replace(/^###\s*/, "")}
+            </h4>
+          );
+        }
+
+        // Numbered lists
+        if (/^\d+\.\s/.test(trimmed)) {
+          const match = trimmed.match(/^(\d+)\.\s*(.*)$/);
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-1.5">
+              <span className="text-[10px] bg-surface-elevated border border-border text-lime font-bold px-1.5 py-0.2 mt-0.5">
+                {match ? match[1] : "•"}
+              </span>
+              <span className="flex-1 text-text-muted">
+                {renderInlineMarkdown(match ? match[2] : trimmed)}
+              </span>
+            </div>
+          );
+        }
+
+        // Bullet lists
+        if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+          return (
+            <div key={idx} className="flex items-start gap-2 pl-2">
+              <span className="text-lime mt-1 text-[10px]">▪</span>
+              <span className="flex-1 text-text-muted">
+                {renderInlineMarkdown(trimmed.replace(/^[-*]\s*/, ""))}
+              </span>
+            </div>
+          );
+        }
+
+        // Regular paragraph with inline formatting
+        return (
+          <p key={idx} className="text-text-muted leading-relaxed">
+            {renderInlineMarkdown(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<MessageItem[]>([
     {
@@ -130,9 +217,7 @@ export default function ChatPage() {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-      if (res.rewritten_code) {
-        setActiveTabByMsg((prev) => ({ ...prev, [assistantMsgId]: "code" }));
-      }
+      setActiveTabByMsg((prev) => ({ ...prev, [assistantMsgId]: "explanation" }));
     } catch (err: any) {
       console.warn("sendBarqAIChat fallback triggered:", err);
       const fallbackRes = synthesizeBarqAIChatResponse({
@@ -156,9 +241,7 @@ export default function ChatPage() {
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-      if (fallbackRes.rewritten_code) {
-        setActiveTabByMsg((prev) => ({ ...prev, [assistantMsgId]: "code" }));
-      }
+      setActiveTabByMsg((prev) => ({ ...prev, [assistantMsgId]: "explanation" }));
     } finally {
       setLoading(false);
     }
@@ -421,10 +504,35 @@ export default function ChatPage() {
                             </div>
                           )}
 
-                          {/* Tab Content: Explanation */}
+                          {/* Tab Content: Explanation & Forensic Diagnostics */}
                           {(currentTab === "explanation" || !msg.rewrittenCode) && (
-                            <div className="text-xs text-text-muted space-y-2 whitespace-pre-wrap leading-relaxed">
-                              {msg.explanation || msg.text}
+                            <div className="space-y-3">
+                              {renderFormattedExplanation(msg.explanation || msg.text)}
+
+                              {msg.rewrittenCode && (
+                                <div className="mt-3 p-3 bg-bg border border-lime/30 flex items-center justify-between gap-3">
+                                  <div>
+                                    <span className="text-[10px] text-lime font-extrabold uppercase tracking-wider block flex items-center gap-1.5">
+                                      <span>⚡</span> HARDENED REMEDIATION CODE AVAILABLE
+                                    </span>
+                                    <span className="text-[10px] text-text-dim block mt-0.5">
+                                      Validated fix with defensive error guards and unified git diff ready
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() =>
+                                      setActiveTabByMsg((prev) => ({
+                                        ...prev,
+                                        [msg.id]: "code",
+                                      }))
+                                    }
+                                    className="text-[10px] bg-lime text-bg font-extrabold px-3 py-1.5 hover:bg-lime/90 transition-colors uppercase tracking-wider whitespace-nowrap flex items-center gap-1"
+                                  >
+                                    <span>VIEW CODE FIX</span>
+                                    <span>→</span>
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
 

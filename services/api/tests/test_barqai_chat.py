@@ -66,3 +66,70 @@ async def test_04_chat_alias_route_functional(client: AsyncClient):
     data = res.json()
     assert len(data["reply"]) > 0
     assert data["model"] is not None
+
+
+@pytest.mark.asyncio
+async def test_05_chat_explains_http_404_not_found(client: AsyncClient):
+    payload = {
+        "message": "I am getting HTTP 404 Not Found when calling my endpoint. Why?",
+        "action": "explain",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "404" in data["explanation"]
+    assert "Route" in data["explanation"] or "endpoint" in data["explanation"].lower()
+    assert data["rewritten_code"] is not None
+
+
+@pytest.mark.asyncio
+async def test_06_chat_explains_cors_policy_violation(client: AsyncClient):
+    payload = {
+        "message": "CORS error: No Access-Control-Allow-Origin header is present on requested resource.",
+        "action": "explain",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "CORS" in data["explanation"]
+    assert "CORSMiddleware" in data["rewritten_code"] or "Access-Control" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_07_chat_explains_typeerror_null_dereference(client: AsyncClient):
+    payload = {
+        "message": "TypeError: Cannot read properties of undefined (reading 'name')",
+        "code_snippet": "const userName = data.user.name;",
+        "file_path": "src/user.ts",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "TypeError" in data["explanation"] or "Null" in data["explanation"]
+    assert "?." in data["rewritten_code"] or "if (" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_08_chat_explains_sql_injection(client: AsyncClient):
+    payload = {
+        "message": "Explain this SQL injection finding and rewrite it safely",
+        "code_snippet": 'cursor.execute(f"SELECT * FROM users WHERE name = \'{user_input}\'")',
+        "file_path": "src/db.py",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "SQL Injection" in data["explanation"] or "CWE-89" in data["explanation"]
+    assert "$1" in data["rewritten_code"] or "%s" in data["rewritten_code"] or "param" in data["rewritten_code"]
+
+
+@pytest.mark.asyncio
+async def test_09_chat_explains_econnrefused(client: AsyncClient):
+    payload = {
+        "message": "Error: connect ECONNREFUSED 127.0.0.1:5432",
+    }
+    res = await client.post("/api/v1/barqai/chat", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert "ECONNREFUSED" in data["explanation"] or "Connection Refused" in data["explanation"]
+    assert "retry" in data["rewritten_code"].lower() or "backoff" in data["rewritten_code"].lower()
