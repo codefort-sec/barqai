@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://codefort-web.vercel.app/$1",
+      "permanent": true
+    }
+  ]
+}
