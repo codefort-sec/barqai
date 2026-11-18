@@ -37,4 +37,4 @@ jobs:
       - name: Run Benchmark Evaluation
         run: |
           cd services/api
-          python -m app.ai.eval_suite --compare
+          uv run python -m app.ai.eval_suite --compare
