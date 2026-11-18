@@ -143,8 +143,9 @@ barqai/
 
 ---
 
-## 👥 Organization & License
+## 👥 Maintainers & License
 
+- **Lead Maintainer**: [Mohammed Nishal (@nichroot)](https://github.com/nichroot)
 - **Organization**: [CodeFort Security](https://github.com/codefort-sec)
 - **Platform Monorepo**: [codefort-sec/codefort](https://github.com/codefort-sec/codefort)
 - **License**: Apache 2.0
